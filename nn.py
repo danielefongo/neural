@@ -47,15 +47,18 @@ class Layer():
 
 activation_function = Activation()
 loss_function = Loss()
-layer = Layer(X.shape[1], Y.shape[1], activation_function)
+layer1 = Layer(X.shape[1], 5, activation_function)
+layer2 = Layer(5, Y.shape[1], activation_function)
 
 for i in np.arange(1, 1000):
-    out = layer.predict(X)
-    loss = loss_function.calculate(out, Y)
-    d_loss = loss_function.derivative(out, Y) # error on output
+    out1 = layer1.predict(X)
+    out2 = layer2.predict(out1)
+    loss = loss_function.calculate(out2, Y)
+    d_loss = loss_function.derivative(out2, Y) # error on output
     print(loss)
-    intermediate_d_error = layer.update(X, out, d_loss)
+    intermediate_d_error = layer2.update(out1, out2, d_loss)
+    layer1.update(X, out2, d_loss)
 
 sample_range = np.arange(10)
-print(out[sample_range])
+print(out2[sample_range])
 print(Y[sample_range])
