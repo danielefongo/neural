@@ -2,7 +2,7 @@ import numpy as np
 
 X1 = np.random.random_integers(1, 10, 3000)
 X2 = np.random.random_integers(1, 10, 3000)
-Y = X1 + X2
+Y = (X1 > X2) * 1
 
 # Train
 learning_rate = 0.001
@@ -13,12 +13,19 @@ def weighted_sum(w, x):
     return np.matmul(x, w)
 
 
-class Activation():  # Linear
+class Linear():  # Linear
     def activate(self, input):
         return input
 
     def derivative(self, output):
         return np.expand_dims(np.ones(output.shape[0]), 1)
+
+class Sigmoid():  # Linear
+    def activate(self, input):
+        return 1 / (1 + np.exp(-input))
+
+    def derivative(self, output):
+        return output * (1 - output)
 
 
 class Loss():
@@ -45,12 +52,11 @@ class Layer():
         self.weights -= gradient * learning_rate
         return d_w
 
-activation_function = Activation()
 loss_function = Loss()
-layer1 = Layer(X.shape[1], 5, activation_function)
-layer2 = Layer(5, Y.shape[1], activation_function)
+layer1 = Layer(X.shape[1], 5, Linear())
+layer2 = Layer(5, Y.shape[1], Sigmoid())
 
-for i in np.arange(1, 1000):
+for i in np.arange(1, 5000):
     out1 = layer1.predict(X)
     out2 = layer2.predict(out1)
     loss = loss_function.calculate(out2, Y)
