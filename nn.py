@@ -37,10 +37,10 @@ class Layer():
         self.weights = np.zeros((input_size, output_size))
 
     def predict(self, x):
-        return activation_function.activate(weighted_sum(self.weights, x))
+        return self.activation.activate(weighted_sum(self.weights, x))
 
     def update(self, x, out, next_d_error):
-        d_w = next_d_error * activation_function.derivative(out)
+        d_w = next_d_error * self.activation.derivative(out)
         gradient = np.matmul(x.T, d_w) / x.shape[0]
         self.weights -= gradient * learning_rate
         return d_w
