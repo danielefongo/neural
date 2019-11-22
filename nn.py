@@ -18,7 +18,7 @@ class Activation():  # Linear
         return input
 
     def derivative(self, output):
-        return 1
+        return np.expand_dims(np.ones(output.shape[0]), 1)
 
 
 class Loss():
