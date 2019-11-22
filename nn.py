@@ -11,18 +11,20 @@ Y = np.expand_dims(Y, 1)
 X = np.column_stack((X1, X2, np.ones(X1.size)))
 W = np.zeros((X.shape[1], Y.shape[1]))
 
+class Activation(): # Linear
+    def activate(self, input):
+        return input
+
+    def derivative(self, output):
+        return 1
+
+activation = Activation()
 
 def weighted_sum(w, x):
     return np.matmul(x, w)
 
-def activate(input):
-    return input
-
-def derivative_activate(output):
-    return 1
-
 def predict(x, w):
-    return activate(weighted_sum(w, x))
+    return activation.activate(weighted_sum(w, x))
 
 def calculate_loss(y, out):
     return np.power(out - y, 2).mean()
@@ -32,7 +34,7 @@ def derivative_loss(y, out):
 
 def calculate_gradient(x, y, out):
     d_loss = derivative_loss(y, out)
-    d_w = d_loss * derivative_activate(out)
+    d_w = d_loss * activation.derivative(out)
     return np.matmul(x.T, d_w) / x.shape[0]
 
 for i in np.arange(1, 1000):
