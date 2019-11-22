@@ -39,10 +39,11 @@ class Layer():
     def predict(self, x):
         return activation_function.activate(weighted_sum(self.weights, x))
 
-    def update(self, x, out, d_next):
-        d_w = d_next * activation_function.derivative(out)
+    def update(self, x, out, next_d_error):
+        d_w = next_d_error * activation_function.derivative(out)
         gradient = np.matmul(x.T, d_w) / x.shape[0]
         self.weights -= gradient * learning_rate
+        return d_w
 
 activation_function = Activation()
 loss_function = Loss()
@@ -51,9 +52,9 @@ layer = Layer(X.shape[1], Y.shape[1], activation_function)
 for i in np.arange(1, 1000):
     out = layer.predict(X)
     loss = loss_function.calculate(out, Y)
-    d_loss = loss_function.derivative(out, Y)
+    d_loss = loss_function.derivative(out, Y) # error on output
     print(loss)
-    layer.update(X, out, d_loss)
+    intermediate_d_error = layer.update(X, out, d_loss)
 
 sample_range = np.arange(10)
 print(out[sample_range])
