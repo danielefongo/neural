@@ -1,6 +1,8 @@
 import numpy as np
 
 from activations import Linear, Sigmoid
+from layers import Layer
+from initializers import Normal
 from losses import CrossEntropy
 from networks import Network
 
@@ -18,9 +20,12 @@ iterations = 5000
 loss_function = CrossEntropy()
 learning_rate = 0.1
 
-network = Network(input_size=X.shape[1], learning_rate=learning_rate)
-network.add_layer(3, Linear())
-network.add_layer(Y.shape[1], Sigmoid())
+input_features = X.shape[-1]
+output_features = Y.shape[-1]
+
+network = Network(input_size=input_features, learning_rate=learning_rate)
+network.add_layer(Layer(shape=(input_features, 3), activation=Linear(), initializer=Normal(0.0, 0.01)))
+network.add_layer(Layer(shape=(3, output_features), activation=Sigmoid()))
 
 network.train(x=X, y=Y, iterations=iterations, loss_function=loss_function)
 output = network.predict(X)

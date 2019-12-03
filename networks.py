@@ -13,13 +13,13 @@ class Network:
         self.learning_rate = learning_rate
         self.outputs = []
 
-    def add_layer(self, units: int, activation: Activation):
+    def add_layer(self, layer: Layer):
         if len(self.layers) == 0:
             input_size = self.input_size
         else:
             input_size = self.layers[len(self.layers) - 1].shape[-1]
 
-        self.layers.append(Layer((input_size, units), activation))
+        self.layers.append(layer)
         self.outputs.append([])
 
     def train(self, x: np.ndarray, y: np.ndarray, iterations: int, loss_function: Loss):
