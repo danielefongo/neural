@@ -17,7 +17,7 @@ class Linear(Activation):
         return x
 
     def derivative(self, predicted):
-        return np.expand_dims(np.ones(predicted.shape[0]), 1)
+        return np.ones(predicted.shape)
 
 
 class Sigmoid(Activation):
