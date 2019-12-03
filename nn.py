@@ -6,7 +6,6 @@ Y = (X1 > X2) * 1.0
 Y2 = ((X1 - X2) > 0.1) * 1.0
 
 # Train
-learning_rate = 0.1
 Y = np.column_stack((Y, Y2))
 X = np.column_stack((X1, X2, np.ones(X1.size)))
 
@@ -47,7 +46,7 @@ class Layer():
     def predict(self, x):
         return self.activation.activate(weighted_sum(self.weights, x))
 
-    def update(self, x, out, next_loss_d):
+    def update(self, x, out, next_loss_d, learning_rate):
         d_w = next_loss_d * self.activation.derivative(out)
         previous_loss_d = np.matmul(d_w, self.weights)
 
@@ -55,20 +54,68 @@ class Layer():
         self.weights -= gradient.T * learning_rate
         return previous_loss_d
 
-loss_function = Loss()
-layer1 = Layer(X.shape[1], 3, Linear())
-layer2 = Layer(3, Y.shape[1], Sigmoid())
+class Network():
+    def __init__(self, input_size, learning_rate):
+        self.layers = []
+        self.input_size = input_size
+        self.learning_rate = learning_rate
+        self.outputs = []
 
-for i in np.arange(1, 5000):
-    out1 = layer1.predict(X)
-    out2 = layer2.predict(out1)
-    loss = loss_function.calculate(out2, Y)
-    if i % 1000 == 0:
-        print(loss)
-    d_loss = loss_function.derivative(out2, Y) # error on output
-    intermediate_d_error = layer2.update(out1, out2, d_loss)
-    layer1.update(X, out1, intermediate_d_error)
+    def addLayer(self, units, activation):
+        if len(self.layers) == 0:
+            input_size = self.input_size
+        else:
+            input_size = self.layers[len(self.layers) - 1].output_size
+
+        print(input_size)
+        self.layers.append(Layer(input_size, units, activation))
+        self.outputs.append([])
+
+    def train(self, iterations, X, Y, loss):
+        for i in range(iterations):
+            self.predict(X)
+
+            lastLayer = self.outputs[len(self.layers) - 1]
+            loss_value = loss.calculate(lastLayer, Y)
+            d_loss = loss.derivative(lastLayer, Y)
+            print(loss_value)
+
+            self.backpropagate(X, d_loss)
+
+    def backpropagate(self, X, d_loss):
+        for layer_id in np.arange(len(self.layers) - 1, 0, -1):
+            d_loss = self._update(layer_id, self.outputs[layer_id - 1], d_loss)
+
+        self._update(0, X, d_loss)
+
+    def predict(self, X):
+        self.outputs[0] = self._predict(X, 0)
+        for layer_id in np.arange(1, len(self.layers)):
+            self.outputs[layer_id] = self._predict(self._out(layer_id - 1), layer_id)
+
+        return self._out(len(self.layers) - 1)
+
+    def _update(self, layer_id, X, d_loss):
+        Y = self.outputs[layer_id]
+        return self.layers[layer_id].update(X, Y, d_loss, self.learning_rate)
+
+    def _out(self, layer_id):
+        return self.outputs[layer_id]
+
+    def _predict(self, X, layer_id):
+        return self.layers[layer_id].predict(X)
+
+iterations = 10000
+loss = Loss()
+learning_rate = 0.1
+
+network = Network(input_size=X.shape[1], learning_rate=learning_rate)
+network.addLayer(3, Linear())
+network.addLayer(Y.shape[1], Sigmoid())
+
+network.train(iterations=iterations, X=X, Y=Y, loss=loss)
+out = network.predict(X)
 
 sample_range = np.arange(10)
-print(np.round(out2[sample_range] * 1000) / 1000)
+print(np.round(out[sample_range] * 1000) / 1000)
 print(Y[sample_range])
