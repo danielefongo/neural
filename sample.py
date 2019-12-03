@@ -14,7 +14,7 @@ Y = np.column_stack((Y, Y2))
 X = np.column_stack((X1, X2, np.ones(X1.size)))
 
 # Train
-iterations = 10000
+iterations = 5000
 loss_function = CrossEntropy()
 learning_rate = 0.1
 

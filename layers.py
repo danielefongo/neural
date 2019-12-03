@@ -1,13 +1,13 @@
 import numpy as np
 
 from activations import Activation
-
+from initializers import Initializer, Random
 
 class Layer:
-    def __init__(self, shape: tuple, activation: Activation):
+    def __init__(self, shape: tuple, activation: Activation, initializer: Initializer = Random()):
         self.shape = shape
         self.activation = activation
-        self.weights = np.random.random_sample(shape)
+        self.weights = initializer.generate(shape)
 
     def predict(self, x: np.ndarray):
         return self.activation.activate(np.matmul(x, self.weights))
