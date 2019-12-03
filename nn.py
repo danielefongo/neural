@@ -9,18 +9,28 @@ Y2 = ((X1 - X2) > 0.1) * 1.0
 Y = np.column_stack((Y, Y2))
 X = np.column_stack((X1, X2, np.ones(X1.size)))
 
+
 def weighted_sum(w, x):
     return np.matmul(x, w.T)
 
 
-class Linear():  # Linear
+class Activation():
+    def activate(self, input):
+        raise NotImplementedError("Should have implemented this")
+
+    def derivative(self, output):
+        raise NotImplementedError("Should have implemented this")
+
+
+class Linear(Activation):
     def activate(self, input):
         return input
 
     def derivative(self, output):
         return np.expand_dims(np.ones(output.shape[0]), 1)
 
-class Sigmoid():  # Linear
+
+class Sigmoid(Activation):
     def activate(self, input):
         return 1 / (1 + np.exp(-input))
 
@@ -28,15 +38,23 @@ class Sigmoid():  # Linear
         return output * (1 - output)
 
 
-class Loss():
+class Loss:
+    def calculate(self, out, y):
+        raise NotImplementedError("Should have implemented this")
+
+    def derivative(self, out, y):
+        raise NotImplementedError("Should have implemented this")
+
+
+class MSE(Loss):
     def calculate(self, out, y):
         return np.power(out - y, 2).mean()
 
     def derivative(self, out, y):
-        return (2 * (out - y))
+        return 2 * (out - y)
 
 
-class Layer():
+class Layer:
     def __init__(self, input_size, output_size, activation):
         self.input_size = input_size
         self.output_size = output_size
@@ -106,7 +124,7 @@ class Network():
         return self.layers[layer_id].predict(X)
 
 iterations = 10000
-loss = Loss()
+loss = MSE()
 learning_rate = 0.1
 
 network = Network(input_size=X.shape[1], learning_rate=learning_rate)
