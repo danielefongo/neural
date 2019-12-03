@@ -54,6 +54,15 @@ class MSE(Loss):
         return 2 * (out - y)
 
 
+class CrossEntropy(Loss):
+    def calculate(self, out, y):
+        first_term = y * np.log(out)
+        second_term = (1 - y) * np.log(1 - out)
+        return -1 * np.average(first_term + second_term)
+
+    def derivative(self, out, y):
+        return out - y
+
 class Layer:
     def __init__(self, input_size, output_size, activation):
         self.input_size = input_size
@@ -124,7 +133,7 @@ class Network():
         return self.layers[layer_id].predict(X)
 
 iterations = 10000
-loss = MSE()
+loss = CrossEntropy()
 learning_rate = 0.1
 
 network = Network(input_size=X.shape[1], learning_rate=learning_rate)
