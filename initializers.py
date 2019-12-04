@@ -18,3 +18,8 @@ class Normal(Initializer):
 
     def generate(self, shape: tuple):
         return np.random.normal(loc=self.mean, scale=self.std, size=shape)
+
+
+class Zeros(Initializer):
+    def generate(self, shape: tuple):
+        return np.zeros(shape)
