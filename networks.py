@@ -31,7 +31,7 @@ class Network:
             loss, d_loss = self._calculate_loss(y, loss_function)
             print(loss)
 
-            self._backpropagate(x, d_loss)
+            self._backpropagate(d_loss)
 
     def _calculate_loss(self, y: np.ndarray, loss_function: Loss):
         predicted = self._out(len(self.layers) - 1)
@@ -39,15 +39,15 @@ class Network:
         d_loss = loss_function.derivative(predicted, y)
         return loss_value, d_loss
 
-    def _backpropagate(self, x: np.ndarray, d_loss: np.ndarray):
+    def _backpropagate(self, d_loss: np.ndarray):
         for layer_id in np.arange(len(self.layers) - 1, 0, -1):
-            d_loss = self._update(layer_id, self.outputs[layer_id - 1], d_loss)
+            d_loss = self._update(layer_id, d_loss)
 
-        self._update(0, x, d_loss)
+        self._update(0, d_loss)
 
-    def _update(self, layer_id: int, x: np.ndarray, d_loss: np.ndarray):
+    def _update(self, layer_id: int, d_loss: np.ndarray):
         y = self.outputs[layer_id]
-        return self.layers[layer_id].update(x, y, d_loss, self.learning_rate)
+        return self.layers[layer_id].update(y, d_loss, self.learning_rate)
 
     def _out(self, layer_id: int):
         return self.outputs[layer_id]
