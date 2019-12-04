@@ -46,8 +46,7 @@ class Network:
         self._update(0, d_loss)
 
     def _update(self, layer_id: int, d_loss: np.ndarray):
-        y = self.outputs[layer_id]
-        return self.layers[layer_id].update(y, d_loss, self.learning_rate)
+        return self.layers[layer_id].update(d_loss, self.learning_rate)
 
     def _out(self, layer_id: int):
         return self.outputs[layer_id]

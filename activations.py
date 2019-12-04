@@ -1,25 +1,38 @@
 import numpy as np
 
+from units import Unit
 
-class Activation:
-    def activate(self, x: np.ndarray):
+
+class Activation(Unit):
+    def run(self, x: np.ndarray):
+        self.input = x
+        self.result = self._activate(self.input)
+        return self.result
+
+    def apply(self, d_loss: np.ndarray, learning_rate: float):
+        pass
+
+    def derivative_loss(self, next_d_loss: np.ndarray = 1):
+        return next_d_loss * self._derivative()
+
+    def _activate(self, x: np.ndarray):
         raise NotImplementedError("Should have implemented this")
 
-    def derivative(self, predicted: np.ndarray):
+    def _derivative(self):
         raise NotImplementedError("Should have implemented this")
 
 
 class Linear(Activation):
-    def activate(self, x: np.ndarray):
+    def _activate(self, x: np.ndarray):
         return x
 
-    def derivative(self, predicted: np.ndarray):
-        return np.ones(predicted.shape)
+    def _derivative(self):
+        return np.ones(self.result.shape)
 
 
 class Sigmoid(Activation):
-    def activate(self, x: np.ndarray):
+    def _activate(self, x: np.ndarray):
         return 1 / (1 + np.exp(-x))
 
-    def derivative(self, predicted: np.ndarray):
-        return predicted * (1 - predicted)
+    def _derivative(self):
+        return self.result * (1 - self.result)
