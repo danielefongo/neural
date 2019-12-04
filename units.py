@@ -38,3 +38,7 @@ class UnitChain(Unit):
 
     def add(self, unit: Unit):
         self.units.append(unit)
+
+    def add(self, units: List[Unit]):
+        for unit in units:
+            self.units.append(unit)

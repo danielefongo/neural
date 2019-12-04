@@ -10,8 +10,7 @@ class Layer:
     def __init__(self, shape: tuple, activation: Activation, weights_initializer: Initializer = Random(),
                  biases_initializer: Initializer = Zeros()):
         self.chain: UnitChain = UnitChain()
-        self.chain.add(WeightedSum(shape, weights_initializer, biases_initializer))
-        self.chain.add(activation)
+        self.chain.add([WeightedSum(shape, weights_initializer, biases_initializer), activation])
 
     def predict(self, x: np.ndarray):
         return self.chain.run(x)
