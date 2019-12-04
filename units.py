@@ -4,6 +4,10 @@ import numpy as np
 
 
 class Unit:
+    def __init__(self):
+        self.input: np.ndarray = np.empty([])
+        self.result: np.ndarray = np.empty([])
+
     def run(self, x: np.ndarray):
         raise NotImplementedError("Should have implemented this")
 
@@ -39,6 +43,11 @@ class UnitChain(Unit):
     def add(self, unit: Unit):
         self.units.append(unit)
 
-    def add(self, units: List[Unit]):
+    def add_list(self, units: List[Unit]):
         for unit in units:
             self.units.append(unit)
+
+    def add_chain(self, unitChain):
+        if isinstance(unitChain, UnitChain):
+            for unit in unitChain.units:
+                self.units.append(unit)
