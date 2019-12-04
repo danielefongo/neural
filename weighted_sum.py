@@ -8,6 +8,7 @@ from weights import Weights
 
 class WeightedSum(Unit):
     def __init__(self, shape, weights_initializer: Initializer, biases_initializer: Initializer):
+        super().__init__()
         self.weights = Weights(shape, weights_initializer, biases_initializer)
 
     def run(self, x: np.ndarray):

@@ -20,6 +20,7 @@ class Unit:
 
 class UnitChain(Unit):
     def __init__(self):
+        super().__init__()
         self.units: List[Unit] = []
 
     def run(self, x: np.ndarray):
