@@ -14,11 +14,6 @@ class Network:
         self.outputs = []
 
     def add_layer(self, layer: Layer):
-        if len(self.layers) == 0:
-            input_size = self.input_size
-        else:
-            input_size = self.layers[len(self.layers) - 1].shape[-1]
-
         self.layers.append(layer)
         self.outputs.append([])
 
