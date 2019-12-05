@@ -21,7 +21,7 @@ class Network:
         return self.chain.run(x)
 
     def train(self, x: np.ndarray, y: np.ndarray, iterations: int, loss_function: Loss, optimizer: Optimizer):
-        for i in range(iterations):
+        for i in np.arange(1, iterations+1):
             optimizer.set_iteration(i)
 
             self.predict(x)

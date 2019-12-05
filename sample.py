@@ -1,11 +1,11 @@
 import numpy as np
 
 from activations import Linear, Sigmoid
-from layers import Layer
 from initializers import Normal
-from losses import CrossEntropy
+from layers import Layer
+from losses import MSE
 from networks import Network
-from optimizers import Optimizer, GradientDescent
+from optimizers import Adam, GradientDescent
 
 # Random data
 X1 = np.random.random(3000)
@@ -17,9 +17,10 @@ Y = np.column_stack((Y1, Y2))
 X = np.column_stack((X1, X2))
 
 # Train
-iterations = 5000
-loss_function = CrossEntropy()
+iterations = 1000
 learning_rate = 0.1
+loss_function = MSE()
+optimizer = Adam(0.01)
 
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
@@ -31,7 +32,7 @@ network.add_layer(Layer(shape=(3, output_features), activation=Sigmoid()))
 network.train(x=X, y=Y,
               iterations=iterations,
               loss_function=loss_function,
-              optimizer=GradientDescent(learning_rate))
+              optimizer=optimizer)
 output = network.predict(X)
 
 sample_range = np.arange(10)
