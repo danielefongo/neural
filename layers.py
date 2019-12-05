@@ -1,8 +1,6 @@
-import numpy as np
-
 from activations import Activation
 from initializers import Initializer, Random, Zeros
-from units import UnitChain, Unit
+from units import UnitChain
 from weighted_sum import WeightedSum
 
 

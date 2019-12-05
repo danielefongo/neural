@@ -19,9 +19,12 @@ class MSE(Loss):
 
 class CrossEntropy(Loss):
     def calculate(self, predicted: np.ndarray, y: np.ndarray):
-        first_term = y * np.log(predicted)
-        second_term = (1 - y) * np.log(1 - predicted)
+        first_term = y * self._safe_log(predicted)
+        second_term = (1 - y) * self._safe_log(1 - predicted)
         return -1 * np.average(first_term + second_term)
+
+    def _safe_log(self, array):
+        return np.log(array, out=np.zeros_like(array), where=(array != 0))
 
     def derivative(self, predicted: np.ndarray, y: np.ndarray):
         return predicted - y
