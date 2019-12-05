@@ -5,17 +5,16 @@ import numpy as np
 from layers import Layer
 from losses import Loss
 from optimizers import Optimizer
-from units import UnitChain
+from units import UnitChain, Unit
 
 
 class Network:
     def __init__(self, input_size: int):
-        self.layers: List[Layer] = []
         self.input_size = input_size
         self.chain = UnitChain()
 
-    def add_layer(self, layer: Layer):
-        self.chain.add_chain(layer)
+    def add(self, unit: Unit):
+        self.chain.add(unit)
 
     def predict(self, x: np.ndarray):
         return self.chain.run(x)

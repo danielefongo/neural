@@ -44,13 +44,12 @@ class UnitChain(Unit):
         return d_loss
 
     def add(self, unit: Unit):
-        self.units.append(unit)
+        if isinstance(unit, UnitChain):
+            for unit in unit.units:
+                self.units.append(unit)
+        else:
+            self.units.append(unit)
 
     def add_list(self, units: List[Unit]):
         for unit in units:
             self.units.append(unit)
-
-    def add_chain(self, unitChain):
-        if isinstance(unitChain, UnitChain):
-            for unit in unitChain.units:
-                self.units.append(unit)
