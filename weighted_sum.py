@@ -2,6 +2,7 @@ import numpy as np
 
 import arrays
 from initializers import Initializer
+from optimizers import Optimizer
 from units import Unit
 from weights import Weights
 
@@ -16,9 +17,8 @@ class WeightedSum(Unit):
         self.result = np.matmul(self.input, self.weights)
         return self.result
 
-    def apply(self, d_loss: np.ndarray, learning_rate: float):
-        gradient = np.matmul(d_loss.T, self.input) / self.input.shape[0]
-        self.weights -= gradient.T * learning_rate
+    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
+        self.weights -= optimizer.on(self, self.input, d_loss)
 
     def derivative_loss(self, next_d_loss: np.ndarray = 1):
         return np.matmul(next_d_loss, self.weights.w.T)

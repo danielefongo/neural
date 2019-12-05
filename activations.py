@@ -1,5 +1,6 @@
 import numpy as np
 
+from optimizers import Optimizer
 from units import Unit
 
 
@@ -9,7 +10,7 @@ class Activation(Unit):
         self.result = self._activate(self.input)
         return self.result
 
-    def apply(self, d_loss: np.ndarray, learning_rate: float):
+    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
         pass
 
     def derivative_loss(self, next_d_loss: np.ndarray = 1):

@@ -5,6 +5,7 @@ from layers import Layer
 from initializers import Normal
 from losses import CrossEntropy
 from networks import Network
+from optimizers import Optimizer, GradientDescent
 
 # Random data
 X1 = np.random.random(3000)
@@ -23,11 +24,14 @@ learning_rate = 0.1
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
-network = Network(input_size=input_features, learning_rate=learning_rate)
+network = Network(input_size=input_features)
 network.add_layer(Layer(shape=(input_features, 3), activation=Linear(), weights_initializer=Normal(0.0, 0.01)))
 network.add_layer(Layer(shape=(3, output_features), activation=Sigmoid()))
 
-network.train(x=X, y=Y, iterations=iterations, loss_function=loss_function)
+network.train(x=X, y=Y,
+              iterations=iterations,
+              loss_function=loss_function,
+              optimizer=GradientDescent(learning_rate))
 output = network.predict(X)
 
 sample_range = np.arange(10)

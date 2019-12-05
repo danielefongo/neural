@@ -2,6 +2,8 @@ from typing import List
 
 import numpy as np
 
+from optimizers import Optimizer
+
 
 class Unit:
     def __init__(self):
@@ -11,7 +13,7 @@ class Unit:
     def run(self, x: np.ndarray):
         raise NotImplementedError("Should have implemented this")
 
-    def apply(self, d_loss: np.ndarray, learning_rate: float):
+    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
         raise NotImplementedError("Should have implemented this")
 
     def derivative_loss(self, next_d_loss: np.ndarray = 1):
@@ -28,10 +30,10 @@ class UnitChain(Unit):
             x = unit.run(x)
         return x
 
-    def apply(self, d_loss: np.ndarray, learning_rate: float):
+    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
         for unit in reversed(self.units):
             d_loss_new = unit.derivative_loss(d_loss)
-            unit.apply(d_loss, learning_rate)
+            unit.apply(d_loss, optimizer)
             d_loss = d_loss_new
 
     def derivative_loss(self, next_d_loss: np.ndarray = 1):
