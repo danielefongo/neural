@@ -37,3 +37,11 @@ class Sigmoid(Activation):
 
     def _derivative(self):
         return self.result * (1 - self.result)
+
+
+class Tanh(Activation):
+    def _activate(self, x: np.ndarray):
+        return np.tanh(x)
+
+    def _derivative(self):
+        return 1.0 - np.power(self.result, 2)
