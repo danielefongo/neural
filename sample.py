@@ -26,7 +26,7 @@ input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
 network = Network(input_size=input_features)
-network.add_layer(Layer(shape=(input_features, 3), activation=Linear(), weights_initializer=Normal(0.0, 0.01)))
+network.add_layer(Layer(shape=(input_features, 3), activation=Linear()))
 network.add_layer(Layer(shape=(3, output_features), activation=Sigmoid()))
 
 network.train(x=X, y=Y,

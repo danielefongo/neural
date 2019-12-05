@@ -12,7 +12,7 @@ class Random(Initializer):
 
 
 class Normal(Initializer):
-    def __init__(self, mean, std):
+    def __init__(self, mean: float = 0.0, std: float = 0.01):
         self.mean = mean
         self.std = std
 
