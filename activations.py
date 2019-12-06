@@ -11,10 +11,7 @@ class Activation(Unit):
         return self.result
 
     def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
-        pass
-
-    def derivative_loss(self, next_d_loss: np.ndarray = 1):
-        return next_d_loss * self._derivative()
+        return d_loss * self._derivative()
 
     def _activate(self, x: np.ndarray):
         raise NotImplementedError("Should have implemented this")

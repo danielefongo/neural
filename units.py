@@ -32,16 +32,7 @@ class UnitChain(Unit):
 
     def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
         for unit in reversed(self.units):
-            d_loss_new = unit.derivative_loss(d_loss)
-            unit.apply(d_loss, optimizer)
-            d_loss = d_loss_new
-
-    def derivative_loss(self, next_d_loss: np.ndarray = 1):
-        d_loss = next_d_loss
-        for unit in reversed(self.units):
-            d_loss = unit.derivative_loss(d_loss)
-
-        return d_loss
+            d_loss = unit.apply(d_loss, optimizer)
 
     def add(self, unit: Unit):
         if isinstance(unit, UnitChain):

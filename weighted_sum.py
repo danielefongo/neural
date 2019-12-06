@@ -18,10 +18,9 @@ class WeightedSum(Unit):
         return self.result
 
     def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
+        d_loss_new = np.matmul(d_loss, self.weights.w.T)
         self.weights -= optimizer.on(self, self.input, d_loss)
-
-    def derivative_loss(self, next_d_loss: np.ndarray = 1):
-        return np.matmul(next_d_loss, self.weights.w.T)
+        return d_loss_new
 
     def _add_ones_for_biases(self, x):
         return arrays.add_column(x, axis=-1, values=1)
