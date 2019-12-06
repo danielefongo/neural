@@ -5,12 +5,12 @@ from units import Unit
 
 
 class Activation(Unit):
-    def run(self, x: np.ndarray):
+    def forward(self, x: np.ndarray):
         self.input = x
         self.result = self._activate(self.input)
         return self.result
 
-    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
+    def backward(self, d_loss: np.ndarray, optimizer: Optimizer):
         return d_loss * self._derivative()
 
     def _activate(self, x: np.ndarray):

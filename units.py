@@ -10,10 +10,10 @@ class Unit:
         self.input: np.ndarray = np.empty([])
         self.result: np.ndarray = np.empty([])
 
-    def run(self, x: np.ndarray):
+    def forward(self, x: np.ndarray):
         raise NotImplementedError("Should have implemented this")
 
-    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
+    def backward(self, d_loss: np.ndarray, optimizer: Optimizer):
         raise NotImplementedError("Should have implemented this")
 
     def derivative_loss(self, next_d_loss: np.ndarray = 1):
@@ -25,14 +25,14 @@ class UnitChain(Unit):
         super().__init__()
         self.units: List[Unit] = []
 
-    def run(self, x: np.ndarray):
+    def forward(self, x: np.ndarray):
         for unit in self.units:
-            x = unit.run(x)
+            x = unit.forward(x)
         return x
 
-    def apply(self, d_loss: np.ndarray, optimizer: Optimizer):
+    def backward(self, d_loss: np.ndarray, optimizer: Optimizer):
         for unit in reversed(self.units):
-            d_loss = unit.apply(d_loss, optimizer)
+            d_loss = unit.backward(d_loss, optimizer)
 
     def add(self, unit: Unit):
         if isinstance(unit, UnitChain):

@@ -17,7 +17,7 @@ class Network:
         self.chain.add(unit)
 
     def predict(self, x: np.ndarray):
-        return self.chain.run(x)
+        return self.chain.forward(x)
 
     def train(self, x: np.ndarray, y: np.ndarray, iterations: int, loss_function: Loss, optimizer: Optimizer):
         for i in np.arange(1, iterations+1):
@@ -37,4 +37,4 @@ class Network:
         return loss_value, d_loss
 
     def backpropagate(self, d_loss: np.ndarray, optimizer: Optimizer):
-        self.chain.apply(d_loss, optimizer)
+        self.chain.backward(d_loss, optimizer)
