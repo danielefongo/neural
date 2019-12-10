@@ -16,9 +16,6 @@ class Unit:
     def backward(self, d_loss: np.ndarray, optimizer: Optimizer):
         raise NotImplementedError("Should have implemented this")
 
-    def derivative_loss(self, next_d_loss: np.ndarray = 1):
-        raise NotImplementedError("Should have implemented this")
-
 
 class UnitChain(Unit):
     def __init__(self):
