@@ -1,11 +1,10 @@
 import numpy as np
 
 from activations import Linear, Sigmoid
-from initializers import Normal
 from layers import Layer
 from losses import MSE
 from networks import Network
-from optimizers import Adam, GradientDescent
+from optimizers import Adam
 
 # Random data
 X1 = np.random.random(3000)
@@ -17,10 +16,11 @@ Y = np.column_stack((Y1, Y2))
 X = np.column_stack((X1, X2))
 
 # Train
-iterations = 1000
-learning_rate = 0.1
+epochs = 50
+batch_size = 32
+learning_rate = 0.01
 loss_function = MSE()
-optimizer = Adam(0.01)
+optimizer = Adam(learning_rate)
 
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
@@ -30,9 +30,11 @@ network.add(Layer(shape=(input_features, 3), activation=Linear()))
 network.add(Layer(shape=(3, output_features), activation=Sigmoid()))
 
 network.train(x=X, y=Y,
-              iterations=iterations,
+              epochs=epochs,
+              batch_size=batch_size,
               loss_function=loss_function,
-              optimizer=optimizer)
+              optimizer=optimizer,
+              shuffle=True)
 output = network.predict(X)
 
 sample_range = np.arange(10)

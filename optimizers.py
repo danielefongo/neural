@@ -6,7 +6,7 @@ class Optimizer:
         self.learning_rate = learning_rate
         self.iteration = 0
 
-    def set_iteration(self, iteration: int):
+    def set_epoch(self, iteration: int):
         self.iteration = iteration
 
     def on(self, unit, inputs: np.ndarray, d_loss: np.ndarray):
