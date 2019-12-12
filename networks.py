@@ -27,7 +27,8 @@ class Network:
             batched_x = to_batches(x, batch_size)
             batched_y = to_batches(y, batch_size)
 
-            self._train_epoch(batched_x, batched_y, loss_function, optimizer)
+            loss = self._train_epoch(batched_x, batched_y, loss_function, optimizer)
+            print("epoch %i: loss = %f" %(epoch, loss))
 
     def _train_epoch(self, batched_x, batched_y, loss_function, optimizer):
         loss_mean = 0
@@ -41,7 +42,7 @@ class Network:
 
             self.backpropagate(d_loss, optimizer)
 
-        print(loss_mean / batches_number)
+        return loss_mean / batches_number
 
     def calculate_loss(self, predicted: np.ndarray, y: np.ndarray, loss_function: Loss):
         loss_value = loss_function.calculate(predicted, y)
