@@ -1,25 +1,28 @@
-import numpy as np
+from typing import Type
 
 from arrays import shuffle_arrays, to_batches
+from graphs import Placeholder, Unit
 from losses import Loss
 from optimizers import Optimizer
-from units import UnitChain, Unit
 
 
 class Network:
-    def __init__(self, input_size: int):
-        self.input_size = input_size
-        self.chain = UnitChain()
+    def __init__(self):
+        self.x = Placeholder()
+        self.y = Placeholder()
+        self.last = self.x
 
     def add(self, unit: Unit):
-        self.chain.add(unit)
+        first = unit.plain_graph()[0]
+        first.add_input_units([self.last])
+        self.last = unit.plain_graph()[-1]
 
-    def predict(self, x: np.ndarray):
-        return self.chain.forward(x)
+    def train(self, x, y, batch_size: int, epochs: int, loss_function: Type[Loss], optimizer: Optimizer, shuffle=True):
+        self.loss = loss_function(self.last, self.y)
+        self.optimizer = optimizer
 
-    def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss, optimizer: Optimizer, shuffle=True):
-        for epoch in range(1, epochs + 1):
-            optimizer.set_epoch(epoch)
+        for epoch in range(1, epochs):
+            self.optimizer.set_epoch(epoch)
 
             if shuffle:
                 x, y = shuffle_arrays(x, y)
@@ -27,26 +30,27 @@ class Network:
             batched_x = to_batches(x, batch_size)
             batched_y = to_batches(y, batch_size)
 
-            self._train_epoch(batched_x, batched_y, loss_function, optimizer)
+            self.x.use(x)
+            self.y.use(y)
 
-    def _train_epoch(self, batched_x, batched_y, loss_function, optimizer):
+            self._train_epoch(batched_x, batched_y)
+
+    def _train_epoch(self, batched_x, batched_y):
         loss_mean = 0
         batches_number = batched_x.shape[0]
 
         for batch in range(batches_number):
-            predicted = self.predict(batched_x[batch])
+            self.x.use(batched_x[batch])
+            self.y.use(batched_y[batch])
 
-            loss, d_loss = self.calculate_loss(predicted, batched_y[batch], loss_function)
-            loss_mean += loss
+            loss_mean += self.loss.evaluate()
 
-            self.backpropagate(d_loss, optimizer)
+            self.loss.error(self.optimizer)
 
         print(loss_mean / batches_number)
 
-    def calculate_loss(self, predicted: np.ndarray, y: np.ndarray, loss_function: Loss):
-        loss_value = loss_function.calculate(predicted, y)
-        d_loss = loss_function.derivative(predicted, y)
-        return loss_value, d_loss
+    def evaluate(self, x, y):
+        self.x.use(x)
+        self.y.use(y)
 
-    def backpropagate(self, d_loss: np.ndarray, optimizer: Optimizer):
-        self.chain.backward(d_loss, optimizer)
+        return self.y.evaluate()

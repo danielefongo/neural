@@ -1,16 +1,13 @@
 import numpy as np
 
-from optimizers import Optimizer
-from units import Unit
+from graphs import Unit
 
 
 class Activation(Unit):
-    def forward(self, x: np.ndarray):
-        self.input = x
-        self.result = self._activate(self.input)
-        return self.result
+    def compute(self, args):
+        return self._activate(args)
 
-    def backward(self, d_loss: np.ndarray, optimizer: Optimizer):
+    def apply(self, d_loss, optimizer):
         return d_loss * self._derivative()
 
     def _activate(self, x: np.ndarray):
@@ -25,7 +22,7 @@ class Linear(Activation):
         return x
 
     def _derivative(self):
-        return np.ones(self.result.shape)
+        return np.ones(self.output.shape)
 
 
 class Sigmoid(Activation):
@@ -33,7 +30,7 @@ class Sigmoid(Activation):
         return 1 / (1 + np.exp(-x))
 
     def _derivative(self):
-        return self.result * (1 - self.result)
+        return self.output * (1 - self.output)
 
 
 class Tanh(Activation):
@@ -41,4 +38,4 @@ class Tanh(Activation):
         return np.tanh(x)
 
     def _derivative(self):
-        return 1.0 - np.power(self.result, 2)
+        return 1.0 - np.power(self.output, 2)
