@@ -5,8 +5,9 @@ from layers import Layer
 from losses import MSE
 from networks import Network
 from optimizers import Adam
-
 # Random data
+from units import Placeholder
+
 X1 = np.random.random(3000)
 X2 = np.random.random(3000)
 Y1 = (X1 > X2) * 1.0
@@ -19,24 +20,17 @@ X = np.column_stack((X1, X2))
 epochs = 50
 batch_size = 32
 learning_rate = 0.01
-loss_function = MSE()
 optimizer = Adam(learning_rate)
 
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
-network = Network(input_size=input_features)
-network.add(Layer(shape=(input_features, 3), activation=Linear()))
-network.add(Layer(shape=(3, output_features), activation=Sigmoid()))
+x = Placeholder()
+y = Placeholder()
+layer1 = Layer(x, Linear, shape=(input_features, 2))
+layer2 = Layer(layer1, Sigmoid, shape=(2, output_features))
 
-network.train(x=X, y=Y,
-              epochs=epochs,
-              batch_size=batch_size,
-              loss_function=loss_function,
-              optimizer=optimizer,
-              shuffle=True)
-output = network.predict(X)
+network = Network(x, layer2)
+network.train(X, Y, batch_size, epochs, MSE, optimizer)
 
-sample_range = np.arange(10)
-print(np.round(output[sample_range] * 1000) / 1000)
-print(Y[sample_range])
+print(layer2.evaluate()[:10])
