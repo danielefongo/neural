@@ -7,6 +7,21 @@ def add_column(array: np.ndarray, axis: int, values: Union[tuple, int]):
     return np.insert(array, array.shape[axis], values=values, axis=axis)
 
 
+def bias_shape(shape):
+    shape = list(shape)
+    shape[0] = 1
+    return tuple(shape)
+
+
+def sum_to_shape(array: np.ndarray, output_shape: tuple):
+    helper_shape = list(output_shape)
+    helper_shape.insert(0, -1)
+
+    array = np.sum(np.reshape(array, helper_shape), axis=0)
+
+    return array
+
+
 def shuffle_arrays(*arrays: np.ndarray):
     if len(arrays) == 0:
         return []

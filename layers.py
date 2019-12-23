@@ -1,14 +1,16 @@
 import numpy as np
 
-from units import Unit
+from arrays import bias_shape
 from initializers import Initializer, Zeros, Normal
-from weighted_sum import WeightedSum
+from units import Unit, Weight, Add, MatMul
 
 
 class Layer(Unit):
     def __init__(self, unit, activation, shape: tuple, weights_initializer: Initializer = Normal(),
                  biases_initializer: Initializer = Zeros()):
-        self.weighted_sum = WeightedSum(unit, shape, weights_initializer, biases_initializer)
+        biases = Weight(bias_shape(shape), biases_initializer)
+        weights = Weight(shape, weights_initializer)
+        self.weighted_sum = Add(MatMul(unit, weights), biases)
         self.activation = activation([self.weighted_sum])
         super().__init__([self.activation])
 
