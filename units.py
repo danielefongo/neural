@@ -6,8 +6,8 @@ from arrays import sum_to_shape
 
 
 class Unit:
-    def __init__(self, input_units: List = []):
-        self.input_units: List[Unit] = input_units
+    def __init__(self, *input_units):
+        self.input_units: List[Unit] = list(input_units)
         self.output_units = []
         self.inputs = []
         self.output = []
@@ -69,7 +69,7 @@ class Placeholder(Unit):
         return self.real_data
 
     def __init__(self):
-        super().__init__([])
+        super().__init__()
         self.real_data = np.array([])
 
     def use(self, x):
@@ -90,7 +90,7 @@ class Weight(Unit):
 
 class Add(Unit):
     def __init__(self, a, b):
-        super().__init__([a, b])
+        super().__init__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
         return a_val + b_val
@@ -107,7 +107,7 @@ class Add(Unit):
 
 class MatMul(Unit):
     def __init__(self, a, b):
-        super().__init__([a, b])
+        super().__init__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
         return np.matmul(a_val, b_val)

@@ -11,8 +11,8 @@ class Layer(Unit):
         biases = Weight(bias_shape(shape), biases_initializer)
         weights = Weight(shape, weights_initializer)
         self.weighted_sum = Add(MatMul(unit, weights), biases)
-        self.activation = activation([self.weighted_sum])
-        super().__init__([self.activation])
+        self.activation = activation(self.weighted_sum)
+        super().__init__(self.activation)
 
     def compute(self, data: np.ndarray):
         return data

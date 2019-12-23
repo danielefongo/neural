@@ -5,7 +5,7 @@ from units import Unit, Placeholder
 
 class Loss(Unit):
     def __init__(self, out: Unit, y: Placeholder):
-        super().__init__([out, y])
+        super().__init__(out, y)
 
     def compute(self, predicted: np.ndarray, y: np.ndarray):
         return self._compute(predicted, y)
