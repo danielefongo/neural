@@ -7,8 +7,8 @@ class Activation(Unit):
     def compute(self, data: np.ndarray):
         return self._activate(data)
 
-    def apply(self, d_loss: np.ndarray, optimizer):
-        return d_loss * self._derivative()
+    def apply(self, gradient: np.ndarray, optimizer):
+        return gradient * self._derivative()
 
     def _activate(self, x: np.ndarray):
         raise NotImplementedError("Should have implemented this")

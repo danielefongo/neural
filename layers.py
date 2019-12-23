@@ -15,5 +15,5 @@ class Layer(Unit):
     def compute(self, data: np.ndarray):
         return data
 
-    def apply(self, d_loss, optimizer):
-        return d_loss
+    def apply(self, gradient, optimizer):
+        return gradient

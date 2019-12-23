@@ -11,13 +11,13 @@ class Optimizer:
     def set_epoch(self, iteration: int):
         self.iteration = iteration
 
-    def on(self, unit, d_loss: np.ndarray):
+    def on(self, unit, gradient: np.ndarray):
         raise NotImplementedError("Should have implemented this")
 
 
 class GradientDescent(Optimizer):
-    def on(self, unit: Unit, d_loss: np.ndarray):
-        return d_loss * self.learning_rate
+    def on(self, unit: Unit, gradient: np.ndarray):
+        return gradient * self.learning_rate
 
 
 class Adam(GradientDescent):
@@ -28,11 +28,11 @@ class Adam(GradientDescent):
         self.epsilon = epsilon
         self.units = {}
 
-    def on(self, unit: Unit, d_loss: np.ndarray):
+    def on(self, unit: Unit, gradient: np.ndarray):
         if unit not in self.units:
             self.units[unit] = dict(mean=0, variance=0)
 
-        gradient = super().on(unit, d_loss)
+        gradient = super().on(unit, gradient)
 
         mean, variance = self._mean_and_variance(unit, gradient)
         self._update(unit, mean, variance)

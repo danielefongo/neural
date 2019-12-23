@@ -15,11 +15,11 @@ class WeightedSum(Unit):
         self.tmp = self._add_ones_for_biases(data)
         return np.matmul(self.tmp, self.weights)
 
-    def apply(self, d_loss, optimizer):
-        d_loss_inputs = np.matmul(d_loss, self.weights.w.T)
-        d_loss_weights = np.matmul(self.tmp.T, d_loss)
-        self.weights -= optimizer.on(self, d_loss_weights)
-        return d_loss_inputs
+    def apply(self, gradient, optimizer):
+        inputs_gradient = np.matmul(gradient, self.weights.w.T)
+        weights_gradient = np.matmul(self.tmp.T, gradient)
+        self.weights -= optimizer.on(self, weights_gradient)
+        return inputs_gradient
 
     def _add_ones_for_biases(self, x):
         return arrays.add_column(x, axis=-1, values=1)

@@ -9,7 +9,7 @@ class Unit:
         self.output_units = []
         self.inputs = []
         self.output = []
-        self.d_loss = None
+        self.gradient = None
 
         for element in input_units:
             if isinstance(element, Unit):
@@ -42,26 +42,26 @@ class Unit:
         self.output = self.compute(*self.inputs)
 
     def _backward(self, optimizer):
-        d_loss = 0
+        gradient = np.array([0])
         for after in self.output_units:
             if len(after.input_units) == 1:
-                d_loss += after.d_loss
+                gradient += after.gradient
             else:
                 index = after.input_units.index(self)
-                d_loss += after.d_loss[index]
+                gradient += after.gradient[index]
 
-        self.d_loss = self.apply(d_loss, optimizer)
+        self.gradient = self.apply(gradient, optimizer)
 
     def compute(self, *args: np.ndarray):
         raise NotImplementedError()
 
-    def apply(self, d_loss: np.ndarray, optimizer):
+    def apply(self, gradient: np.ndarray, optimizer):
         raise NotImplementedError()
 
 
 class Placeholder(Unit):
-    def apply(self, d_loss: np.ndarray, optimizer):
-        return d_loss
+    def apply(self, gradient: np.ndarray, optimizer):
+        return gradient
 
     def compute(self):
         return self.real_data
