@@ -1,21 +1,32 @@
 from typing import List
 
 import numpy as np
+import copy
 
 from arrays import sum_to_shape
 
 
 class Unit:
-    def __init__(self, *input_units):
-        self.input_units: List[Unit] = list(input_units)
+    def __init__(self):
+        self.input_units = []
         self.output_units = []
         self.inputs = []
         self.output = []
         self.gradient = None
 
+    def __call__(self, *input_units):
+        self._remove_all_inputs()
+
+        self.input_units: List[Unit] = list(input_units)
         for element in input_units:
             if isinstance(element, Unit):
                 element.output_units.append(self)
+        return self
+
+    def _remove_all_inputs(self):
+        for element in copy.copy(self.input_units):
+            element.output_units.remove(self)
+            self.input_units.remove(element)
 
     def evaluate(self):
         nodes = self.plain_graph()
@@ -62,18 +73,19 @@ class Unit:
 
 
 class Placeholder(Unit):
+    def __init__(self):
+        super().__init__()
+        self.real_data = np.array([])
+
+    def __call__(self, x):
+        self.real_data = x
+        return self
+
     def apply(self, gradient: np.ndarray, optimizer):
         return gradient
 
     def compute(self):
         return self.real_data
-
-    def __init__(self):
-        super().__init__()
-        self.real_data = np.array([])
-
-    def use(self, x):
-        self.real_data = x
 
 
 class Weight(Unit):
@@ -89,8 +101,8 @@ class Weight(Unit):
 
 
 class Add(Unit):
-    def __init__(self, a, b):
-        super().__init__(a, b)
+    def __call__(self, a, b):
+        return super().__call__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
         return a_val + b_val
@@ -106,8 +118,8 @@ class Add(Unit):
 
 
 class MatMul(Unit):
-    def __init__(self, a, b):
-        super().__init__(a, b)
+    def __call__(self, a, b):
+        return super().__call__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
         return np.matmul(a_val, b_val)
@@ -120,3 +132,36 @@ class MatMul(Unit):
         b_gradient = np.matmul(a_val.T, gradient)
 
         return [a_gradient, b_gradient]
+
+
+class Identity(Unit):
+    def compute(self, args: np.ndarray):
+        return args
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        return gradient
+
+
+class Wrapper(Unit):
+    def __init__(self, unit, input):
+        self.fake_input: Placeholder = Placeholder()
+        self.fake_output: Unit = Unit()
+
+        self.input: Unit = input
+        self.unit: Unit = unit
+
+        self.input(self.fake_input)
+        self.fake_output(self.unit)
+        super().__init__()
+
+    def compute(self, args: np.ndarray):
+        self.fake_input(args)
+
+        return self.unit.evaluate()
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        self.fake_output.gradient = gradient
+
+        self.unit.error(optimizer)
+
+        return self.input.gradient

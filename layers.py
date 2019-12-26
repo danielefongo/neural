@@ -1,21 +1,17 @@
-import numpy as np
-
+from activations import Activation
 from arrays import bias_shape
 from initializers import Initializer, Zeros, Normal
-from units import Unit, Weight, Add, MatMul
+from units import Weight, Add, Wrapper, Identity, MatMul
 
 
-class Layer(Unit):
-    def __init__(self, unit, activation, shape: tuple, weights_initializer: Initializer = Normal(),
+class Layer(Wrapper):
+    def __init__(self, activation: Activation, shape: tuple, weights_initializer: Initializer = Normal(),
                  biases_initializer: Initializer = Zeros()):
-        biases = Weight(bias_shape(shape), biases_initializer)
-        weights = Weight(shape, weights_initializer)
-        self.weighted_sum = Add(MatMul(unit, weights), biases)
-        self.activation = activation(self.weighted_sum)
-        super().__init__(self.activation)
+        self.weights = Weight(shape, weights_initializer)
+        self.biases = Weight(bias_shape(shape), biases_initializer)
 
-    def compute(self, data: np.ndarray):
-        return data
-
-    def apply(self, gradient, optimizer):
-        return gradient
+        identity = Identity()
+        matmul = MatMul()(identity, self.weights)
+        weighted_sum = Add()(matmul, self.biases)
+        activation = activation(weighted_sum)
+        super(Layer, self).__init__(activation, identity)

@@ -14,7 +14,7 @@ class Network:
         self.y = Placeholder()
         self.unit = output_unit
 
-    def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Type[Loss], optimizer: Optimizer, shuffle=True):
+    def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss, optimizer: Optimizer, shuffle=True):
         loss = loss_function(self.unit, self.y)
 
         for epoch in range(1, epochs):
@@ -34,8 +34,8 @@ class Network:
         batches_number = batched_x.shape[0]
 
         for batch in range(batches_number):
-            self.x.use(batched_x[batch])
-            self.y.use(batched_y[batch])
+            self.x(batched_x[batch])
+            self.y(batched_y[batch])
 
             loss_mean += loss.evaluate()
 
@@ -43,8 +43,7 @@ class Network:
 
         return loss_mean / batches_number
 
-    def evaluate(self, x, y):
-        self.x.use(x)
-        self.y.use(y)
+    def evaluate(self, x):
+        self.x(x)
 
         return self.y.evaluate()

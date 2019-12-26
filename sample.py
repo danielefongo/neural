@@ -27,10 +27,10 @@ output_features = Y.shape[-1]
 
 x = Placeholder()
 y = Placeholder()
-layer1 = Layer(x, Linear, shape=(input_features, 2))
-layer2 = Layer(layer1, Sigmoid, shape=(2, output_features))
+layer1 = Layer(Linear(), shape=(input_features, 2))(x)
+layer2 = Layer(Sigmoid(), shape=(2, output_features))(layer1)
 
 network = Network(x, layer2)
-network.train(X, Y, batch_size, epochs, MSE, optimizer)
+network.train(X, Y, batch_size, epochs, MSE(), optimizer)
 
 print(layer2.evaluate()[:10])
