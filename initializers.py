@@ -23,3 +23,8 @@ class Normal(Initializer):
 class Zeros(Initializer):
     def generate(self, shape: tuple):
         return np.zeros(shape)
+
+
+class Ones(Initializer):
+    def generate(self, shape: tuple):
+        return np.ones(shape)
