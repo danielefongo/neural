@@ -134,7 +134,7 @@ class MatMul(Unit):
         return [a_gradient, b_gradient]
 
 
-class Identity(Unit):
+class UnitPlaceholder(Unit):
     def compute(self, args: np.ndarray):
         return args
 
@@ -143,19 +143,21 @@ class Identity(Unit):
 
 
 class Wrapper(Unit):
-    def __init__(self, unit, input):
-        self.fake_input: Placeholder = Placeholder()
+    def __init__(self, unit):
         self.fake_output: Unit = Unit()
+        self.fake_inputs = [Placeholder() for candidate in unit.plain_graph() if isinstance(candidate, UnitPlaceholder)]
 
-        self.input: Unit = input
+        self.unit_placeholders = [candidate for candidate in unit.plain_graph() if isinstance(candidate, UnitPlaceholder)]
         self.unit: Unit = unit
 
-        self.input(self.fake_input)
+        for index in range(len(self.unit_placeholders)):
+            self.unit_placeholders[index](self.fake_inputs[index])
         self.fake_output(self.unit)
         super().__init__()
 
-    def compute(self, args: np.ndarray):
-        self.fake_input(args)
+    def compute(self, *args: np.ndarray):
+        for index in range(len(self.unit_placeholders)):
+            self.fake_inputs[index](args[index])
 
         return self.unit.evaluate()
 
@@ -164,4 +166,5 @@ class Wrapper(Unit):
 
         self.unit.error(optimizer)
 
-        return self.input.gradient
+        gradients = [unit.gradient for unit in self.unit_placeholders]
+        return gradients if len(gradients) > 1 else gradients[0]
