@@ -5,8 +5,8 @@ from layers import Layer
 from losses import MSE
 from networks import Network
 from optimizers import Adam
+
 # Random data
-from units import Placeholder
 
 X1 = np.random.random(3000)
 X2 = np.random.random(3000)
@@ -25,12 +25,9 @@ optimizer = Adam(learning_rate)
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
-x = Placeholder()
-y = Placeholder()
-layer1 = Layer(Linear(), shape=(input_features, 2))(x)
-layer2 = Layer(Sigmoid(), shape=(2, output_features))(layer1)
-
-network = Network(x, layer2)
+network = Network()
+network.add(Layer(Linear(), shape=(input_features, 2)))
+network.add(Layer(Sigmoid(), shape=(2, output_features)))
 network.train(X, Y, batch_size, epochs, MSE(), optimizer)
 
-print(layer2.evaluate()[:10])
+print(network.unit.evaluate()[:10])

@@ -9,10 +9,14 @@ from optimizers import Optimizer
 
 
 class Network:
-    def __init__(self, x: Placeholder, output_unit: Unit):
-        self.x = x
+    def __init__(self):
+        self.x = Placeholder()
         self.y = Placeholder()
-        self.unit = output_unit
+        self.unit = self.x
+
+    def add(self, unit):
+        unit(self.unit)
+        self.unit = unit
 
     def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss, optimizer: Optimizer, shuffle=True):
         loss = loss_function(self.unit, self.y)
