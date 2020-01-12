@@ -88,6 +88,10 @@ class Placeholder(Unit):
         return self.real_data
 
 
+class InputPlaceholder(Placeholder):
+    pass
+
+
 class Weight(Unit):
     def __init__(self, shape, initializer):
         super().__init__()
@@ -134,29 +138,18 @@ class MatMul(Unit):
         return [a_gradient, b_gradient]
 
 
-class UnitPlaceholder(Unit):
-    def compute(self, args: np.ndarray):
-        return args
-
-    def apply(self, gradient: np.ndarray, optimizer):
-        return gradient
-
-
 class Wrapper(Unit):
     def __init__(self, unit):
         self.fake_output: Unit = Unit()
-        self.fake_inputs = [Placeholder() for candidate in unit.plain_graph() if isinstance(candidate, UnitPlaceholder)]
+        self.fake_inputs = [candidate for candidate in unit.plain_graph() if isinstance(candidate, InputPlaceholder)]
 
-        self.unit_placeholders = [candidate for candidate in unit.plain_graph() if isinstance(candidate, UnitPlaceholder)]
         self.unit: Unit = unit
-
-        for index in range(len(self.unit_placeholders)):
-            self.unit_placeholders[index](self.fake_inputs[index])
         self.fake_output(self.unit)
+
         super().__init__()
 
     def compute(self, *args: np.ndarray):
-        for index in range(len(self.unit_placeholders)):
+        for index in range(len(self.fake_inputs)):
             self.fake_inputs[index](args[index])
 
         return self.unit.evaluate()
@@ -166,5 +159,5 @@ class Wrapper(Unit):
 
         self.unit.error(optimizer)
 
-        gradients = [unit.gradient for unit in self.unit_placeholders]
+        gradients = [unit.gradient for unit in self.fake_inputs]
         return gradients if len(gradients) > 1 else gradients[0]

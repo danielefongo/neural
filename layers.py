@@ -1,7 +1,7 @@
 from activations import Activation
 from arrays import bias_shape
 from initializers import Initializer, Zeros, Normal
-from units import Weight, Add, Wrapper, MatMul, UnitPlaceholder
+from units import Weight, Add, Wrapper, MatMul, InputPlaceholder
 
 
 class Layer(Wrapper):
@@ -10,7 +10,7 @@ class Layer(Wrapper):
         self.weights = Weight(shape, weights_initializer)
         self.biases = Weight(bias_shape(shape), biases_initializer)
 
-        matmul = MatMul()(UnitPlaceholder(), self.weights)
+        matmul = MatMul()(InputPlaceholder(), self.weights)
         weighted_sum = Add()(matmul, self.biases)
         activation = activation(weighted_sum)
         super(Layer, self).__init__(activation)
