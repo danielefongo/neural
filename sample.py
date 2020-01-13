@@ -26,8 +26,8 @@ input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
 network = Network()
-network.add(Layer(Linear(), shape=(input_features, 2)))
-network.add(Layer(Sigmoid(), shape=(2, output_features)))
+network.add(Layer(Linear(), size=2))
+network.add(Layer(Sigmoid(), size=output_features))
 network.train(X, Y, batch_size, epochs, MSE(), optimizer)
 
 print(network.unit.evaluate()[:10])

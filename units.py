@@ -1,7 +1,7 @@
+import copy
 from typing import List
 
 import numpy as np
-import copy
 
 from arrays import sum_to_shape
 
@@ -93,9 +93,19 @@ class InputPlaceholder(Placeholder):
 
 
 class Weight(Unit):
-    def __init__(self, shape, initializer):
+    def __init__(self, initializer):
         super().__init__()
-        self.weights = initializer.generate(shape)
+        self.initializer = initializer
+        self.weights = None
+
+    def is_empty(self):
+        return self.weights is None
+
+    def set(self, shape):
+        if not self.is_empty():
+            return
+
+        self.weights = self.initializer.generate(shape)
 
     def compute(self):
         return self.weights
