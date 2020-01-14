@@ -5,7 +5,7 @@ from initializers import Initializer, Zeros, Normal
 from units import Weight, Wrapper, InputPlaceholder, MatMul, Add
 
 
-class WeighedSum(Wrapper):
+class WeightedSum(Wrapper):
     def __init__(self, size, weight_initializer, bias_initializer):
         self.size = size
         self.weights = Weight(weight_initializer)
@@ -25,6 +25,6 @@ class WeighedSum(Wrapper):
 class Layer(Wrapper):
     def __init__(self, size: int, activation: Activation = Linear(), weights_initializer: Initializer = Normal(),
                  biases_initializer: Initializer = Zeros()):
-        weighted_sum = WeighedSum(size, weights_initializer, biases_initializer)(InputPlaceholder())
+        weighted_sum = WeightedSum(size, weights_initializer, biases_initializer)(InputPlaceholder())
         activation = activation(weighted_sum)
         super().__init__(activation)

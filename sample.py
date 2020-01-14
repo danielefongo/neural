@@ -1,6 +1,6 @@
 import numpy as np
 
-from activations import Linear, Sigmoid
+from activations import Sigmoid
 from layers import Layer
 from losses import MSE
 from networks import Network
