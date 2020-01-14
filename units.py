@@ -72,6 +72,19 @@ class Unit:
         raise NotImplementedError()
 
 
+class Variable:
+    def __init__(self, value):
+        self._value = value
+
+    def get_value(self):
+        return self._value
+
+    def set_value(self, value):
+        self._value = value
+
+    value = property(get_value, set_value)
+
+
 class Placeholder(Unit):
     def __init__(self):
         super().__init__()
@@ -105,13 +118,13 @@ class Weight(Unit):
         if not self.is_empty():
             return
 
-        self.weights = self.initializer.generate(shape)
+        self.weights = Variable(self.initializer.generate(shape))
 
     def compute(self):
-        return self.weights
+        return self.weights.value
 
     def apply(self, gradient: np.ndarray, optimizer):
-        self.weights -= optimizer.on(self, gradient)
+        self.weights.value -= optimizer.on(self, gradient)
 
 
 class Add(Unit):
