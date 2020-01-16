@@ -26,7 +26,7 @@ input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
 network = Network()
-network.add(Layer(2))
+network.add(Layer(2).copy())
 network.add(Layer(output_features, activation=Sigmoid()))
 network.train(X, Y, batch_size, epochs, MSE(), optimizer)
 

@@ -14,6 +14,14 @@ class Unit:
         self.output = []
         self.gradient = None
 
+    def __deepcopy__(self, memo):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        for k, v in self.__dict__.items():
+            setattr(result, k, copy.deepcopy(v, memo))
+        return result
+
     def __call__(self, *input_units):
         self._remove_all_inputs()
 
@@ -36,6 +44,9 @@ class Unit:
     def error(self, optimizer):
         nodes = self.plain_graph()[::-1]
         [node._backward(optimizer) for node in nodes]
+
+    def copy(self):
+        return copy.deepcopy(self)
 
     def plain_graph(self):
         node_list: List[Unit] = []
@@ -73,7 +84,7 @@ class Unit:
 
 
 class Variable:
-    def __init__(self, value):
+    def __init__(self, value=None):
         self._value = value
 
     def get_value(self):
@@ -81,6 +92,12 @@ class Variable:
 
     def set_value(self, value):
         self._value = value
+
+    def is_empty(self):
+        return self._value is None
+
+    def __deepcopy__(self, memo):
+        return self
 
     value = property(get_value, set_value)
 
@@ -109,16 +126,16 @@ class Weight(Unit):
     def __init__(self, initializer):
         super().__init__()
         self.initializer = initializer
-        self.weights = None
+        self.weights = Variable()
 
     def is_empty(self):
-        return self.weights is None
+        return self.weights.is_empty()
 
     def set(self, shape):
         if not self.is_empty():
             return
 
-        self.weights = Variable(self.initializer.generate(shape))
+        self.weights.value = self.initializer.generate(shape)
 
     def compute(self):
         return self.weights.value
