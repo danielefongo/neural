@@ -178,6 +178,56 @@ class MatMul(Unit):
         return [a_gradient, b_gradient]
 
 
+class Merge(Unit):
+    def __init__(self, axis=-1):
+        super().__init__()
+        self.axis = axis
+
+    def compute(self, *args):
+        self.number = len(args)
+        if len(args) > 1:
+            self.splits = np.cumsum([a.shape[self.axis] for a in args])
+            return np.concatenate(args, self.axis)
+        return args[0]
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        if self.number > 1:
+            return np.split(gradient, self.splits, self.axis)
+        return gradient
+
+
+class Stack(Unit):
+    def __init__(self, axis=1):
+        super().__init__()
+        self.axis = axis
+
+    def compute(self, *args):
+        self.number = len(args)
+        if self.number > 1:
+            return np.stack(args, self.axis)
+        return args[0]
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        if self.number > 1:
+            return [array[:, 0] for array in np.split(gradient, self.number, self.axis)]
+        return gradient
+
+
+class Take(Unit):
+    def __init__(self, index, axis=1):
+        super().__init__()
+        self.index = index
+        self.axis = axis
+
+    def compute(self, args: np.ndarray):
+        self.shape = args.shape
+        return np.take(args, self.index, self.axis)
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        calculated_gradient = np.delete(np.zeros(self.shape), self.index, self.axis)
+        return np.insert(calculated_gradient, self.index, gradient, self.axis)
+
+
 class Wrapper(Unit):
     def __init__(self, unit):
         self.fake_output: Unit = Unit()
@@ -208,3 +258,36 @@ class Wrapper(Unit):
 
         gradients = [unit.gradient for unit in self.fake_inputs]
         return gradients if len(gradients) > 1 else gradients[0]
+
+
+class Recurrent(Wrapper):
+    def __init__(self, unit, size, timeseries_length, return_sequences=False):
+        self.size = size
+        self.timeseries_length = timeseries_length
+        self.return_sequences = return_sequences
+        self.zero = Placeholder()
+
+        self.units = self._unroll(unit, self.timeseries_length)
+
+        if self.return_sequences:
+            self.concat = Stack()(*self.units)
+        else:
+            self.concat = Stack()(self.units[-1])
+
+        super().__init__(self.concat)
+
+    def compute(self, args: np.ndarray):
+        self.zero(np.zeros((args.shape[0], self.size)))
+        return super().compute(args)
+
+    def _unroll(self, unit, timeseries_length):
+        timeframed_input = InputPlaceholder()
+        recurrent_unit = Wrapper(unit.copy())(self.zero, Take(0)(timeframed_input))
+
+        units = [recurrent_unit]
+        for i in range(1, timeseries_length):
+            recurrent_unit2 = Wrapper(unit.copy())(recurrent_unit, Take(i)(timeframed_input))
+            units.append(recurrent_unit2)
+            recurrent_unit = recurrent_unit2
+
+        return units

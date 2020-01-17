@@ -2,7 +2,7 @@ import numpy as np
 
 from activations import Activation, Linear
 from initializers import Initializer, Zeros, Normal
-from units import Weight, Wrapper, InputPlaceholder, MatMul, Add
+from units import Weight, Wrapper, InputPlaceholder, MatMul, Add, Recurrent, Merge
 
 
 class WeightedSum(Wrapper):
@@ -28,3 +28,10 @@ class Layer(Wrapper):
         weighted_sum = WeightedSum(size, weights_initializer, biases_initializer)(InputPlaceholder())
         activation = activation(weighted_sum)
         super().__init__(activation)
+
+
+class SimpleRNN(Recurrent):
+    def __init__(self, size, timeseries_length, activation=Linear(), weight_initializer=Normal(), bias_initializer=Zeros(), return_sequences=False):
+        merge = Merge()(InputPlaceholder(), InputPlaceholder())
+        layer = Layer(size, activation, weight_initializer, bias_initializer)(merge)
+        super().__init__(layer, size, timeseries_length, return_sequences)
