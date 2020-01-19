@@ -18,7 +18,7 @@ class Network:
     def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss, optimizer: Optimizer, shuffle=True):
         loss = loss_function(self.unit, self.y)
 
-        for epoch in range(1, epochs):
+        for epoch in range(1, epochs+1):
             optimizer.set_epoch(epoch)
 
             if shuffle:
