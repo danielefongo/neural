@@ -162,6 +162,20 @@ class Add(Unit):
         return [a_gradient, b_gradient]
 
 
+class Multiply(Unit):
+    def __call__(self, a, b):
+        return super().__call__(a, b)
+
+    def compute(self, a_val: np.ndarray, b_val: np.ndarray):
+        return a_val * b_val
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        a_val = self.inputs[0]
+        b_val = self.inputs[1]
+
+        return [gradient * a_val, gradient * b_val]
+
+
 class MatMul(Unit):
     def __call__(self, a, b):
         return super().__call__(a, b)
