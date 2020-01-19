@@ -243,6 +243,19 @@ class Take(Unit):
         return np.insert(calculated_gradient, self.index, gradient, self.axis)
 
 
+class Flatten(Unit):
+    def __init__(self, axis=1):
+        super().__init__()
+        self.axis = axis
+
+    def compute(self, args: np.ndarray):
+        self.shape = args.shape
+        return np.reshape(args, args.shape[:self.axis] + (-1,))
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        return np.reshape(gradient, self.shape)
+
+
 class Wrapper(Unit):
     def __init__(self, unit):
         self.fake_output: Unit = Unit()
