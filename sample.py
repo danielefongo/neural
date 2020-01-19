@@ -1,27 +1,31 @@
 import numpy as np
 
-from activations import Linear
-from layers import SimpleRNN
-from losses import MSE
+from activations import Softmax, Tanh
+from layers import Layer
+from losses import CrossEntropy
 from networks import Network
 from optimizers import Adam
 
-# Random data
-
-X = np.array([[[1], [2], [3]], [[2], [3], [4]]])
-Y = X[:, -1] + 1
+# Load RANDOM data
+X = np.random.random(3000)
+X = np.reshape(X, (-1, 2))
+Y1 = X[:, 0] > X[:, 1]
+Y2 = X[:, 0] <= X[:, 1]
+Y = np.stack((Y1, Y2), 1) * 1.0
 
 # Train
-epochs = 200
-batch_size = 2
-learning_rate = 0.01
+epochs = 20
+batch_size = 8
+learning_rate = 0.001
 optimizer = Adam(learning_rate)
 
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
 network = Network()
-network.add(SimpleRNN(1, X.shape[1], Linear()))
-network.train(X, Y, batch_size, epochs, MSE(), optimizer, shuffle=False)
+network.add(Layer(100, Tanh()))
+network.add(Layer(Y.shape[-1], Softmax()))
+network.train(X, Y, batch_size, epochs, CrossEntropy(), optimizer, shuffle=False)
 
-print(network.unit.evaluate())
+print(network.y.evaluate()[:3])
+print(network.unit.evaluate()[:3])

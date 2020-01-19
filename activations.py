@@ -4,38 +4,41 @@ from units import Unit
 
 
 class Activation(Unit):
-    def compute(self, data: np.ndarray):
-        return self._activate(data)
-
-    def apply(self, gradient: np.ndarray, optimizer):
-        return gradient * self._derivative()
-
-    def _activate(self, x: np.ndarray):
-        raise NotImplementedError("Should have implemented this")
-
-    def _derivative(self):
-        raise NotImplementedError("Should have implemented this")
+    pass
 
 
 class Linear(Activation):
-    def _activate(self, x: np.ndarray):
+    def compute(self, x: np.ndarray):
         return x
 
-    def _derivative(self):
-        return np.ones(self.output.shape)
+    def apply(self, gradient: np.ndarray, optimizer):
+        return gradient * np.ones(self.output.shape)
 
 
 class Sigmoid(Activation):
-    def _activate(self, x: np.ndarray):
+    def compute(self, x: np.ndarray):
         return 1 / (1 + np.exp(-x))
 
-    def _derivative(self):
-        return self.output * (1 - self.output)
+    def apply(self, gradient: np.ndarray, optimizer):
+        return gradient * self.output * (1 - self.output)
 
 
 class Tanh(Activation):
-    def _activate(self, x: np.ndarray):
+    def compute(self, x: np.ndarray):
         return np.tanh(x)
 
-    def _derivative(self):
-        return 1.0 - np.power(self.output, 2)
+    def apply(self, gradient: np.ndarray, optimizer):
+        return gradient * (1.0 - np.power(self.output, 2))
+
+
+class Softmax(Activation):
+    def compute(self, x: np.ndarray):
+        max_on_axis = np.max(x, axis=-1)[:, np.newaxis]
+        exp = np.exp(x - max_on_axis)
+        total = np.sum(exp, axis=-1)[:, np.newaxis]
+        return exp / total
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        result = np.einsum('ij,ik->ijk', self.output, -self.output)
+        np.einsum('ijj->ij', result)[...] += self.output
+        return np.einsum('ij,ijk->ik', gradient, result)
