@@ -13,6 +13,7 @@ class Unit:
         self.inputs = []
         self.output = []
         self.gradient = None
+        self.plain = []
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -29,6 +30,8 @@ class Unit:
         for element in input_units:
             if isinstance(element, Unit):
                 element.output_units.append(self)
+
+        self.plain = self.plain_graph()
         return self
 
     def _remove_all_inputs(self):
@@ -37,13 +40,11 @@ class Unit:
             self.input_units.remove(element)
 
     def evaluate(self):
-        nodes = self.plain_graph()
-        [node._forward() for node in nodes]
+        [node._forward() for node in self.plain]
         return self.output
 
     def error(self, optimizer):
-        nodes = self.plain_graph()[::-1]
-        [node._backward(optimizer) for node in nodes]
+        [node._backward(optimizer) for node in self.plain[::-1]]
 
     def copy(self):
         return copy.deepcopy(self)
