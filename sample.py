@@ -1,10 +1,10 @@
 import numpy as np
 
-from activations import Softmax, Tanh
-from layers import Layer
-from losses import CrossEntropy
-from networks import Network
-from optimizers import Adam
+from neural.activations import Softmax, Tanh
+from neural.layers import Layer
+from neural.losses import CrossEntropy
+from neural.networks import Network
+from neural.optimizers import Adam
 
 # Load RANDOM data
 X = np.random.random(3000)

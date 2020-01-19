@@ -1,6 +1,6 @@
 import numpy as np
 
-from units import Unit, Placeholder
+from neural.units import Unit, Placeholder
 
 
 class Loss(Unit):

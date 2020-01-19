@@ -1,11 +1,9 @@
-from typing import Type
-
 import numpy as np
 
-from arrays import shuffle_arrays, to_batches
-from units import Placeholder, Unit
-from losses import Loss
-from optimizers import Optimizer
+from neural.arrays import shuffle_arrays, to_batches
+from neural.units import Placeholder
+from neural.losses import Loss
+from neural.optimizers import Optimizer
 
 
 class Network:

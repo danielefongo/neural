@@ -1,6 +1,6 @@
 import numpy as np
 
-from units import Unit
+from neural.units import Unit
 
 
 class Optimizer:

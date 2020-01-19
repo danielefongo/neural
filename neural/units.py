@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 
-from arrays import sum_to_shape
+from neural.arrays import sum_to_shape
 
 
 class Unit:

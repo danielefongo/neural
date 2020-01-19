@@ -1,8 +1,8 @@
 import numpy as np
 
-from activations import Activation, Linear
-from initializers import Initializer, Zeros, Normal
-from units import Weight, Wrapper, InputPlaceholder, MatMul, Add, Recurrent, Merge
+from neural.activations import Activation, Linear
+from neural.initializers import Initializer, Zeros, Normal
+from neural.units import Weight, Wrapper, InputPlaceholder, MatMul, Add, Recurrent, Merge
 
 
 class WeightedSum(Wrapper):
