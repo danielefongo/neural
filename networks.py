@@ -15,8 +15,7 @@ class Network:
         self.unit = self.x
 
     def add(self, unit):
-        unit(self.unit)
-        self.unit = unit
+        self.unit = unit(self.unit)
 
     def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss, optimizer: Optimizer, shuffle=True):
         loss = loss_function(self.unit, self.y)
