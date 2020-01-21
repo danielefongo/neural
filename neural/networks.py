@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 
 from neural.arrays import shuffle_arrays, to_batches
@@ -27,8 +29,10 @@ class Network:
             batched_x = to_batches(x, batch_size)
             batched_y = to_batches(y, batch_size)
 
+            epoch_start = time.time()
             loss_value = self._train_epoch(batched_x, batched_y, optimizer, loss)
-            print("epoch %i: loss = %f" % (epoch, loss_value))
+            epoch_end = time.time()
+            print("epoch %i: loss = %f, execution time = %is" % (epoch, loss_value, epoch_end - epoch_start))
 
     def _train_epoch(self, batched_x, batched_y, optimizer, loss):
         loss_mean = 0
