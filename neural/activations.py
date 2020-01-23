@@ -1,6 +1,7 @@
 import numpy as np
 
 from neural.units import Unit
+from neural.ops import multiply, divide, add, subtract
 
 
 class Activation(Unit):
@@ -12,15 +13,15 @@ class Linear(Activation):
         return x
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return gradient * np.ones(self.output.shape)
+        return multiply(gradient, np.ones(self.output.shape))
 
 
 class Sigmoid(Activation):
     def compute(self, x: np.ndarray):
-        return 1 / (1 + np.exp(-x))
+        return divide(1, add(1, np.exp(-x)))
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return gradient * self.output * (1 - self.output)
+        return multiply(gradient, multiply(self.output, subtract(1, self.output)))
 
 
 class Tanh(Activation):
@@ -28,7 +29,7 @@ class Tanh(Activation):
         return np.tanh(x)
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return gradient * (1.0 - np.power(self.output, 2))
+        return multiply(gradient, subtract(1.0, np.power(self.output, 2)))
 
 
 class Softmax(Activation):
@@ -36,7 +37,7 @@ class Softmax(Activation):
         max_on_axis = np.max(x, axis=-1)[:, np.newaxis]
         exp = np.exp(x - max_on_axis)
         total = np.sum(exp, axis=-1)[:, np.newaxis]
-        return exp / total
+        return divide(exp, total)
 
     def apply(self, gradient: np.ndarray, optimizer):
         result = np.einsum('ij,ik->ijk', self.output, -self.output)

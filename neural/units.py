@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 
 from neural.arrays import sum_to_shape
+from neural.ops import multiply, add
 
 
 class Unit:
@@ -150,7 +151,7 @@ class Add(Unit):
         return super().__call__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
-        return a_val + b_val
+        return add(a_val, b_val)
 
     def apply(self, gradient: np.ndarray, optimizer):
         a_val = self.inputs[0]
@@ -167,13 +168,13 @@ class Multiply(Unit):
         return super().__call__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
-        return a_val * b_val
+        return multiply(a_val, b_val)
 
     def apply(self, gradient: np.ndarray, optimizer):
         a_val = self.inputs[0]
         b_val = self.inputs[1]
 
-        return [gradient * a_val, gradient * b_val]
+        return [multiply(gradient, a_val), multiply(gradient, b_val)]
 
 
 class MatMul(Unit):
