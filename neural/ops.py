@@ -58,3 +58,20 @@ def replace(axis: int, index: int, array: np.ndarray, destination: np.ndarray):
 
 def reshape(array: np.ndarray, shape: tuple):
     return np.reshape(array, shape)
+
+
+# creational operations
+def zeros(shape: tuple):
+    return np.zeros(shape)
+
+
+def ones(shape: tuple):
+    return np.ones(shape)
+
+
+def normal(shape: tuple, mean: float, std: float):
+    return np.random.normal(loc=mean, scale=std, size=shape)
+
+
+def random(shape: tuple):
+    return np.random.random_sample(shape)

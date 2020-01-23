@@ -3,7 +3,7 @@ from typing import List
 
 import numpy as np
 
-from neural.ops import multiply, add, dot, reduce_sum, merge, unmerge, stack, unstack, take, replace, reshape
+from neural.ops import multiply, add, dot, reduce_sum, merge, unmerge, stack, unstack, take, replace, reshape, zeros
 
 
 class Unit:
@@ -239,8 +239,7 @@ class Take(Unit):
         return take(self.axis, self.index, args)
 
     def apply(self, gradient: np.ndarray, optimizer):
-        zeros = np.zeros(self.shape)
-        return replace(self.axis, self.index, gradient, zeros)
+        return replace(self.axis, self.index, gradient, zeros(self.shape))
 
 
 class Flatten(Unit):
@@ -305,7 +304,7 @@ class Recurrent(Wrapper):
         super().__init__(self.concat)
 
     def compute(self, args: np.ndarray):
-        self.zero(np.zeros((args.shape[0], self.size)))
+        self.zero(zeros((args.shape[0], self.size)))
         return super().compute(args)
 
     def _unroll(self, unit, timeseries_length):

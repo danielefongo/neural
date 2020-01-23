@@ -1,4 +1,4 @@
-import numpy as np
+from neural.ops import zeros, ones, normal, random
 
 
 class Initializer:
@@ -8,7 +8,7 @@ class Initializer:
 
 class Random(Initializer):
     def generate(self, shape: tuple):
-        return np.random.random_sample(shape)
+        return random(shape)
 
 
 class Normal(Initializer):
@@ -17,14 +17,14 @@ class Normal(Initializer):
         self.std = std
 
     def generate(self, shape: tuple):
-        return np.random.normal(loc=self.mean, scale=self.std, size=shape)
+        return normal(shape, self.mean, self.std)
 
 
 class Zeros(Initializer):
     def generate(self, shape: tuple):
-        return np.zeros(shape)
+        return zeros(shape)
 
 
 class Ones(Initializer):
     def generate(self, shape: tuple):
-        return np.ones(shape)
+        return ones(shape)

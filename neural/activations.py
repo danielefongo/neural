@@ -1,7 +1,7 @@
 import numpy as np
 
 from neural.units import Unit
-from neural.ops import multiply, divide, add, subtract
+from neural.ops import multiply, divide, add, subtract, ones
 
 
 class Activation(Unit):
@@ -13,7 +13,7 @@ class Linear(Activation):
         return x
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return multiply(gradient, np.ones(self.output.shape))
+        return multiply(gradient, ones(self.output.shape))
 
 
 class Sigmoid(Activation):
