@@ -1,10 +1,6 @@
 import numpy as np
 
 
-def sum_to_shape(array: np.ndarray, output_shape: tuple):
-    return np.sum(np.reshape(array, [-1] + list(output_shape)), axis=0)
-
-
 def shuffle_arrays(*arrays: np.ndarray):
     if len(arrays) == 0:
         return []

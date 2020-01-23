@@ -18,10 +18,10 @@ class Linear(Activation):
 
 class Sigmoid(Activation):
     def compute(self, x: np.ndarray):
-        return divide(1, add(1, np.exp(-x)))
+        return divide(1.0, add(1.0, np.exp(-x)))
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return multiply(gradient, multiply(self.output, subtract(1, self.output)))
+        return multiply(gradient, multiply(self.output, subtract(1.0, self.output)))
 
 
 class Tanh(Activation):

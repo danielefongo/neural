@@ -3,8 +3,7 @@ from typing import List
 
 import numpy as np
 
-from neural.arrays import sum_to_shape
-from neural.ops import multiply, add
+from neural.ops import multiply, add, dot, reduce_sum, merge, unmerge, stack, unstack, take, replace, reshape
 
 
 class Unit:
@@ -157,8 +156,8 @@ class Add(Unit):
         a_val = self.inputs[0]
         b_val = self.inputs[1]
 
-        a_gradient = sum_to_shape(gradient, a_val.shape)
-        b_gradient = sum_to_shape(gradient, b_val.shape)
+        a_gradient = reduce_sum(gradient, a_val.shape)
+        b_gradient = reduce_sum(gradient, b_val.shape)
 
         return [a_gradient, b_gradient]
 
@@ -182,14 +181,14 @@ class MatMul(Unit):
         return super().__call__(a, b)
 
     def compute(self, a_val: np.ndarray, b_val: np.ndarray):
-        return np.matmul(a_val, b_val)
+        return dot(a_val, b_val)
 
     def apply(self, gradient: np.ndarray, optimizer):
         a_val = self.inputs[0]
         b_val = self.inputs[1]
 
-        a_gradient = np.matmul(gradient, b_val.T)
-        b_gradient = np.matmul(a_val.T, gradient)
+        a_gradient = dot(gradient, b_val.T)
+        b_gradient = dot(a_val.T, gradient)
 
         return [a_gradient, b_gradient]
 
@@ -201,14 +200,14 @@ class Merge(Unit):
 
     def compute(self, *args):
         self.number = len(args)
-        if len(args) > 1:
-            self.splits = np.cumsum([a.shape[self.axis] for a in args])
-            return np.concatenate(args, self.axis)
+        if self.number > 1:
+            result, self.splits = merge(self.axis, *args)
+            return result
         return args[0]
 
     def apply(self, gradient: np.ndarray, optimizer):
         if self.number > 1:
-            return np.split(gradient, self.splits, self.axis)
+            return unmerge(self.axis, self.splits, gradient)
         return gradient
 
 
@@ -220,12 +219,12 @@ class Stack(Unit):
     def compute(self, *args):
         self.number = len(args)
         if self.number > 1:
-            return np.stack(args, self.axis)
+            return stack(self.axis, args)
         return args[0]
 
     def apply(self, gradient: np.ndarray, optimizer):
         if self.number > 1:
-            return [array[:, 0] for array in np.split(gradient, self.number, self.axis)]
+            return unstack(self.axis, gradient)
         return gradient
 
 
@@ -237,11 +236,11 @@ class Take(Unit):
 
     def compute(self, args: np.ndarray):
         self.shape = args.shape
-        return np.take(args, self.index, self.axis)
+        return take(self.axis, self.index, args)
 
     def apply(self, gradient: np.ndarray, optimizer):
-        calculated_gradient = np.delete(np.zeros(self.shape), self.index, self.axis)
-        return np.insert(calculated_gradient, self.index, gradient, self.axis)
+        zeros = np.zeros(self.shape)
+        return replace(self.axis, self.index, gradient, zeros)
 
 
 class Flatten(Unit):
@@ -251,10 +250,10 @@ class Flatten(Unit):
 
     def compute(self, args: np.ndarray):
         self.shape = args.shape
-        return np.reshape(args, args.shape[:self.axis] + (-1,))
+        return reshape(args, args.shape[:self.axis] + (-1,))
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return np.reshape(gradient, self.shape)
+        return reshape(gradient, self.shape)
 
 
 class Wrapper(Unit):
