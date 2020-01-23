@@ -3,7 +3,8 @@ from typing import List
 
 import numpy as np
 
-from neural.ops import multiply, add, dot, reduce_sum, merge, unmerge, stack, unstack, take, replace, reshape, zeros
+from neural.ops import multiply, add, dot, sum_to_shape, merge, unmerge, stack, unstack, take, replace, reshape, zeros, \
+    empty
 
 
 class Unit:
@@ -106,7 +107,7 @@ class Variable:
 class Placeholder(Unit):
     def __init__(self):
         super().__init__()
-        self.real_data = np.array([])
+        self.real_data = empty()
 
     def __call__(self, x):
         self.real_data = x
@@ -156,8 +157,8 @@ class Add(Unit):
         a_val = self.inputs[0]
         b_val = self.inputs[1]
 
-        a_gradient = reduce_sum(gradient, a_val.shape)
-        b_gradient = reduce_sum(gradient, b_val.shape)
+        a_gradient = sum_to_shape(gradient, a_val.shape)
+        b_gradient = sum_to_shape(gradient, b_val.shape)
 
         return [a_gradient, b_gradient]
 
@@ -219,7 +220,7 @@ class Stack(Unit):
     def compute(self, *args):
         self.number = len(args)
         if self.number > 1:
-            return stack(self.axis, args)
+            return stack(self.axis, *args)
         return args[0]
 
     def apply(self, gradient: np.ndarray, optimizer):

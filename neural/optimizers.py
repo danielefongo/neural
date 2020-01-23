@@ -1,5 +1,6 @@
 import numpy as np
 
+from neural.ops import divide, subtract, power, multiply, add, sqrt, square
 from neural.units import Unit
 
 
@@ -37,10 +38,10 @@ class Adam(GradientDescent):
         mean, variance = self._mean_and_variance(unit, gradient)
         self._update(unit, mean, variance)
 
-        mean_hat = mean / (1 - np.power(self.beta1, self.iteration))
-        variance_hat = variance / (1 - np.power(self.beta2, self.iteration))
+        mean_hat = divide(mean, subtract(1.0, power(self.beta1, self.iteration)))
+        variance_hat = divide(variance, subtract(1.0, power(self.beta2, self.iteration)))
 
-        return (self.learning_rate * mean_hat) / (np.sqrt(variance_hat) + self.epsilon)
+        return divide(multiply(self.learning_rate, mean_hat), add(sqrt(variance_hat), self.epsilon))
 
     def _update(self, unit, mean, variance):
         self.units[unit]["mean"] = mean
@@ -50,7 +51,7 @@ class Adam(GradientDescent):
         mean = self.units[unit]["mean"]
         variance = self.units[unit]["variance"]
 
-        mean = self.beta1 * mean + (1 - self.beta1) * gradient
-        variance = self.beta2 * variance + (1 - self.beta2) * np.power(gradient, 2)
+        mean = add(multiply(self.beta1, mean), multiply(subtract(1.0, self.beta1), gradient))
+        variance = add(multiply(self.beta2, variance), multiply(subtract(1.0, self.beta2), square(gradient)))
 
         return mean, variance

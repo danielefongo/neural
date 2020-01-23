@@ -1,7 +1,8 @@
 import numpy as np
 
 from neural.units import Unit
-from neural.ops import multiply, divide, add, subtract, ones
+from neural.ops import multiply, divide, add, subtract, ones, exp, tanh, add_dimension, reduce_max, reduce_sum, einsum, \
+    square
 
 
 class Activation(Unit):
@@ -18,7 +19,7 @@ class Linear(Activation):
 
 class Sigmoid(Activation):
     def compute(self, x: np.ndarray):
-        return divide(1.0, add(1.0, np.exp(-x)))
+        return divide(1.0, add(1.0, exp(-x)))
 
     def apply(self, gradient: np.ndarray, optimizer):
         return multiply(gradient, multiply(self.output, subtract(1.0, self.output)))
@@ -26,20 +27,20 @@ class Sigmoid(Activation):
 
 class Tanh(Activation):
     def compute(self, x: np.ndarray):
-        return np.tanh(x)
+        return tanh(x)
 
     def apply(self, gradient: np.ndarray, optimizer):
-        return multiply(gradient, subtract(1.0, np.power(self.output, 2)))
+        return multiply(gradient, subtract(1.0, square(self.output)))
 
 
 class Softmax(Activation):
     def compute(self, x: np.ndarray):
-        max_on_axis = np.max(x, axis=-1)[:, np.newaxis]
-        exp = np.exp(x - max_on_axis)
-        total = np.sum(exp, axis=-1)[:, np.newaxis]
-        return divide(exp, total)
+        max_on_axis = add_dimension(reduce_max(x, axis=-1))
+        exp_value = exp(x - max_on_axis)
+        total = add_dimension(reduce_sum(exp_value, axis=-1))
+        return divide(exp_value, total)
 
     def apply(self, gradient: np.ndarray, optimizer):
-        result = np.einsum('ij,ik->ijk', self.output, -self.output)
-        np.einsum('ijj->ij', result)[...] += self.output
-        return np.einsum('ij,ijk->ik', gradient, result)
+        result = einsum('ij,ik->ijk', self.output, -self.output)
+        einsum('ijj->ij', result)[...] += self.output
+        return einsum('ij,ijk->ik', gradient, result)

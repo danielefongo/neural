@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 
 
-# arithmetic operations
+# basic operations
 def add(a, b):
     return a + b
 
@@ -20,13 +20,53 @@ def divide(a, b):
     return a / b
 
 
+def square(a):
+    return np.square(a)
+
+
+def log(a):
+    return np.log(a, out=np.zeros_like(a), where=(a != 0))
+
+
+def exp(a):
+    return np.exp(a)
+
+
+def power(a, b):
+    return np.power(a, b)
+
+
+def sqrt(a):
+    return np.sqrt(a)
+
+
+def tanh(a):
+    return np.tanh(a)
+
+
 # matrix operations
 def dot(a: np.ndarray, b: np.ndarray):
     return a.dot(b)
 
 
-def reduce_sum(array: np.ndarray, output_shape: tuple = ()):
+def einsum(indexes: str, *arrays: np.ndarray):
+    return np.einsum(indexes, *arrays)
+
+
+def sum_to_shape(array: np.ndarray, output_shape: tuple = ()):
     return np.sum(np.reshape(array, [-1] + list(output_shape)), axis=0)
+
+
+def reduce_mean(array: np.ndarray, axis: int = None):
+    return np.mean(array, axis=axis)
+
+
+def reduce_sum(array: np.ndarray, axis: int = None):
+    return np.sum(array, axis=axis)
+
+
+def reduce_max(array: np.ndarray, axis: int = None):
+    return np.max(array, axis=axis)
 
 
 def merge(axis: int, *arrays: np.ndarray):
@@ -60,6 +100,11 @@ def reshape(array: np.ndarray, shape: tuple):
     return np.reshape(array, shape)
 
 
+def add_dimension(array: np.ndarray, right: bool = True):
+    if right:
+        return array[..., np.newaxis]
+    return array[np.newaxis, ...]
+
 # creational operations
 def zeros(shape: tuple):
     return np.zeros(shape)
@@ -75,3 +120,7 @@ def normal(shape: tuple, mean: float, std: float):
 
 def random(shape: tuple):
     return np.random.random_sample(shape)
+
+
+def empty():
+    return np.array([])

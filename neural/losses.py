@@ -1,6 +1,7 @@
 import numpy as np
 
 from neural.units import Unit, Placeholder
+from neural.ops import square, reduce_mean, log, multiply, add, subtract, divide
 
 
 class Loss(Unit):
@@ -22,20 +23,17 @@ class Loss(Unit):
 
 class MSE(Loss):
     def _compute(self, predicted: np.ndarray, y: np.ndarray):
-        return np.power(predicted - y, 2).mean()
+        return reduce_mean(square(predicted - y))
 
     def _apply(self, gradient: np.ndarray, optimizer):
-        return 2 * (self.inputs[0] - self.inputs[1]) / self.inputs[0].shape[0]
+        return divide(multiply(2.0, subtract(self.inputs[0], self.inputs[1])), self.inputs[0].shape[0])
 
 
 class CrossEntropy(Loss):
     def _compute(self, predicted: np.ndarray, y: np.ndarray):
-        first_term = y * self._safe_log(predicted)
-        second_term = (1 - y) * self._safe_log(1 - predicted)
-        return -1 * np.average(first_term + second_term)
+        first_term = multiply(y, log(predicted))
+        second_term = multiply(subtract(1.0, y), log(1 - predicted))
+        return multiply(-1.0, reduce_mean(add(first_term, second_term)))
 
     def _apply(self, gradient: np.ndarray, optimizer):
-        return (self.inputs[0] - self.inputs[1]) / self.inputs[0].shape[0]
-
-    def _safe_log(self, array: np.ndarray):
-        return np.log(array, out=np.zeros_like(array), where=(array != 0))
+        return divide(subtract(self.inputs[0], self.inputs[1]), self.inputs[0].shape[0])
