@@ -1,25 +1,8 @@
-from typing import Union
-
 import numpy as np
 
 
-def add_column(array: np.ndarray, axis: int, values: Union[tuple, int]):
-    return np.insert(array, array.shape[axis], values=values, axis=axis)
-
-
-def bias_shape(shape):
-    shape = list(shape)
-    shape[0] = 1
-    return tuple(shape)
-
-
 def sum_to_shape(array: np.ndarray, output_shape: tuple):
-    helper_shape = list(output_shape)
-    helper_shape.insert(0, -1)
-
-    array = np.sum(np.reshape(array, helper_shape), axis=0)
-
-    return array
+    return np.sum(np.reshape(array, [-1] + list(output_shape)), axis=0)
 
 
 def shuffle_arrays(*arrays: np.ndarray):
@@ -30,9 +13,6 @@ def shuffle_arrays(*arrays: np.ndarray):
     return tuple([array[mask] for array in arrays])
 
 
-def to_batches(array: np.ndarray, size):
-    shape = list(array.shape[1:])
-    shape.insert(0, size)
-    shape.insert(0, int(array.shape[0] / size))
-
+def to_batches(array: np.ndarray, batch_size):
+    shape = [int(array.shape[0] / batch_size), batch_size] + list(array.shape[1:])
     return np.resize(array, shape)
