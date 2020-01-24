@@ -92,8 +92,9 @@ def take(axis: int, index: int, array: np.ndarray):
 
 
 def replace(axis: int, index: int, array: np.ndarray, destination: np.ndarray):
-    calculated_gradient = np.delete(destination, index, axis)
-    return np.insert(calculated_gradient, index, array, axis)
+    mask = tuple([index if actual_axis == axis else slice(None) for actual_axis in range(destination.ndim)])
+    destination[mask] = array
+    return destination
 
 
 def reshape(array: np.ndarray, shape: tuple):
@@ -104,6 +105,7 @@ def add_dimension(array: np.ndarray, right: bool = True):
     if right:
         return array[..., np.newaxis]
     return array[np.newaxis, ...]
+
 
 # creational operations
 def zeros(shape: tuple):

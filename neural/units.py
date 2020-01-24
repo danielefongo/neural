@@ -68,13 +68,18 @@ class Unit:
         self.output = self.compute(*self.inputs)
 
     def _backward(self, optimizer):
-        gradient = 0
+        gradient = None
         for after in self.output_units:
             if len(after.input_units) == 1:
-                gradient += after.gradient
+                next_gradient = after.gradient
             else:
                 index = after.input_units.index(self)
-                gradient += after.gradient[index]
+                next_gradient = after.gradient[index]
+
+            if gradient is None:
+                gradient = next_gradient
+            else:
+                gradient += next_gradient
 
         self.gradient = self.apply(gradient, optimizer)
 
@@ -314,8 +319,7 @@ class Recurrent(Wrapper):
 
         units = [recurrent_unit]
         for i in range(1, timeseries_length):
-            recurrent_unit2 = Wrapper(unit.copy())(recurrent_unit, Take(i)(timeframed_input))
-            units.append(recurrent_unit2)
-            recurrent_unit = recurrent_unit2
+            recurrent_unit = Wrapper(unit.copy())(recurrent_unit, Take(i)(timeframed_input))
+            units.append(recurrent_unit)
 
         return units
