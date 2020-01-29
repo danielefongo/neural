@@ -3,14 +3,14 @@ import time
 import numpy as np
 
 from neural.arrays import shuffle_arrays, to_batches
-from neural.units import Placeholder
+from neural.units import Placeholder, InputPlaceholder, Unit
 from neural.losses import Loss
 from neural.optimizers import Optimizer
 
 
 class Network:
     def __init__(self):
-        self.x = Placeholder()
+        self.x = InputPlaceholder()
         self.y = Placeholder()
         self.unit = self.x
 
@@ -52,3 +52,19 @@ class Network:
         self.x(x)
 
         return self.y.evaluate()
+
+    def structure(self):
+        return self.unit.structure()
+
+    def from_structure(self, configs):
+        self.unit = Unit.create(configs)
+        self.x = self.obtain_placeholders(self.unit)[0]
+
+    def obtain_placeholders(self, unit):
+        candidates = []
+        for candidate in unit.plain_graph():
+            if candidate not in candidates and isinstance(candidate, InputPlaceholder):
+                candidates.append(candidate)
+        return candidates
+
+

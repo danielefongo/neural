@@ -1,23 +1,17 @@
-import json
-
 import numpy as np
 
-from neural.configurables import Config
-from neural.initializers import Ones, Normal, Zeros
-from neural.layers import WeightedSum
+from neural.activations import Softmax, Tanh
+from neural.layers import Layer
+from neural.losses import CrossEntropy
+from neural.networks import Network
 from neural.optimizers import Adam
+
 # Load RANDOM data
-from neural.units import InputPlaceholder, Unit, MatMul
-
-
-def obtain_placeholders(unit):
-    candidates = []
-    for candidate in unit.plain_graph():
-        if candidate not in candidates and isinstance(candidate, InputPlaceholder):
-            candidates.append(candidate)
-    return candidates
-
-X = np.ones((2, 2))
+X = np.random.random(3000)
+X = np.reshape(X, (-1, 2))
+Y1 = X[:, 0] > X[:, 1]
+Y2 = X[:, 0] <= X[:, 1]
+Y = np.stack((Y1, Y2), 1) * 1.0
 
 # Train
 epochs = 20
@@ -25,28 +19,16 @@ batch_size = 8
 learning_rate = 0.001
 optimizer = Adam(learning_rate)
 
-# print(matmul.evaluate())
-# y = matmul.structure()
-#
-# new_matmul = Unit.create(y)
-# placeholder = obtain_placeholders(new_matmul)[0]
-# placeholder(X)
-# print(new_matmul.structure())
-# print(new_matmul.evaluate())
+input_features = X.shape[-1]
+output_features = Y.shape[-1]
 
-a = InputPlaceholder()
-b = WeightedSum(1, Ones(), Zeros())(a)
+network = Network()
+network.add(Layer(100, Tanh()))
+network.add(Layer(Y.shape[-1], Softmax()))
+network.train(X, Y, batch_size, epochs, CrossEntropy(), optimizer, shuffle=False)
 
-d = Unit.create(b.structure())
-
-#print(b.self_structure())
-print(b.structure())
-print(d.structure())
-placeholder_b = obtain_placeholders(b)[0]
-placeholder_d = obtain_placeholders(d)[0]
-placeholder_b(X)
-placeholder_d(X)
-print(b.evaluate())
-print(d.evaluate())
-#print(d.self_structure())
-#print(Unit.create(b.structure()))
+structure = network.structure()
+network2 = Network()
+network2.from_structure(structure)
+network2.train(X, Y, batch_size, epochs, CrossEntropy(), optimizer, shuffle=False)
+print(network2.unit.evaluate()[:3])
