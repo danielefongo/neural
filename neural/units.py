@@ -11,14 +11,14 @@ from neural.ops import multiply, add, dot, sum_to_shape, merge, unmerge, stack, 
 
 
 class Unit(Config):
-    def __init__(self, init: list = []):
+    def __init__(self):
         self.input_units = []
         self.output_units = []
         self.inputs = []
         self.output = []
         self.gradient = None
         self.plain = []
-        super().__init__(*init)
+        super().__init__()
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -291,14 +291,14 @@ class Flatten(Unit):
 
 
 class Wrapper(Unit):
-    def __init__(self, unit, init = []):
+    def __init__(self, unit):
         self.fake_output: Unit = Unit()
         self.fake_inputs = self.obtain_placeholders(unit)
 
         self.unit: Unit = unit
         self.fake_output(self.unit)
 
-        super().__init__(init)
+        super().__init__()
 
     def obtain_placeholders(self, unit):
         candidates = []
@@ -339,7 +339,7 @@ class Recurrent(Wrapper):
         else:
             self.concat = Stack()(self.units[-1])
 
-        super().__init__(self.concat, init)
+        super().__init__(self.concat)
 
     def compute(self, args: np.ndarray):
         self.zero(zeros((args.shape[0], self.size)))

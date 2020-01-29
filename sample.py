@@ -56,6 +56,7 @@ def setVariables(unit, vars):
 unitina = SimpleRNN(1,2)(InputPlaceholder()(X)) #Layer(1, Linear(), Ones(), Zeros())(InputPlaceholder()(X))
 # setVariables(network.unit, a)
 print(unitina.evaluate())
+print(unitina.structure())
 unitina2 = Unit.create(unitina.structure())
 setVariables(unitina2, getWeight(unitina))
 
