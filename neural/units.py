@@ -158,25 +158,26 @@ class InputPlaceholder(Placeholder):
 
 
 class Weight(Unit):
-    def __init__(self, initializer):
+    def __init__(self, var=None):
         super().__init__()
-        self.initializer = initializer
-        self.weights = Variable()
+        if var is None:
+            var = Variable()
+        self.weights = var
 
     def is_empty(self):
         return self.weights.is_empty()
 
-    def set(self, shape):
-        if not self.is_empty():
-            return
-
-        self.weights.value = self.initializer.generate(shape)
+    def set(self, data):
+        self.weights.value = data
 
     def compute(self):
         return self.weights.value
 
     def apply(self, gradient: np.ndarray, optimizer):
         self.weights.value -= optimizer.on(self, gradient)
+
+    def __deepcopy__(self, memo):
+        return self
 
 
 class Add(Unit):
@@ -290,7 +291,7 @@ class Flatten(Unit):
 
 
 class Wrapper(Unit):
-    def __init__(self, unit, init):
+    def __init__(self, unit, init = []):
         self.fake_output: Unit = Unit()
         self.fake_inputs = self.obtain_placeholders(unit)
 
@@ -325,7 +326,7 @@ class Wrapper(Unit):
 
 
 class Recurrent(Wrapper):
-    def __init__(self, unit, size, timeseries_length, return_sequences=False):
+    def __init__(self, unit, size, timeseries_length, return_sequences=False, init=None):
         self.size = size
         self.timeseries_length = timeseries_length
         self.return_sequences = return_sequences
@@ -338,7 +339,7 @@ class Recurrent(Wrapper):
         else:
             self.concat = Stack()(self.units[-1])
 
-        super().__init__(self.concat)
+        super().__init__(self.concat, init)
 
     def compute(self, args: np.ndarray):
         self.zero(zeros((args.shape[0], self.size)))
@@ -353,4 +354,5 @@ class Recurrent(Wrapper):
             recurrent_unit = Wrapper(unit.copy())(recurrent_unit, Take(i)(timeframed_input))
             units.append(recurrent_unit)
 
+        print([i.unit.weighted_sum.biases.weights for i in units])
         return units

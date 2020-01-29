@@ -8,8 +8,10 @@ from neural.units import Weight, Wrapper, InputPlaceholder, MatMul, Add, Recurre
 class WeightedSum(Wrapper):
     def __init__(self, size, weight_initializer, bias_initializer):
         self.size = size
-        self.weights = Weight(weight_initializer)
-        self.biases = Weight(bias_initializer)
+        self.weights = Weight()
+        self.biases = Weight()
+        self.weight_initializer = weight_initializer
+        self.bias_initializer = bias_initializer
 
         matmul = MatMul()(InputPlaceholder(), self.weights)
         weighted_sum = Add()(matmul, self.biases)
@@ -17,8 +19,8 @@ class WeightedSum(Wrapper):
 
     def compute(self, args: np.ndarray):
         if self.weights.is_empty():
-            self.weights.set((args.shape[-1], self.size))
-            self.biases.set((1, self.size))
+            self.weights.set(self.weight_initializer.generate((args.shape[-1], self.size)))
+            self.biases.set(self.bias_initializer.generate((1, self.size)))
         return super().compute(args)
 
 class Layer(Wrapper):
@@ -33,4 +35,4 @@ class SimpleRNN(Recurrent):
     def __init__(self, size, timeseries_length, activation=Linear(), weight_initializer=Normal(), bias_initializer=Zeros(), return_sequences=False):
         merge = Merge()(InputPlaceholder(), InputPlaceholder())
         layer = Layer(size, activation, weight_initializer, bias_initializer)(merge)
-        super().__init__(layer, size, timeseries_length, return_sequences)
+        super().__init__(layer, size, timeseries_length, return_sequences, [size, timeseries_length, activation, weight_initializer, bias_initializer, return_sequences])
