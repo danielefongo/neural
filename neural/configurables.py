@@ -31,7 +31,6 @@ class Config:
     @staticmethod
     def self_create(config):
         unittype = locate(config["clazz"])
-        hashino = config["hash"]
         init = config["init"]
         for i in range(len(init)):
             if isinstance(init[i], dict) and "clazz" in init[i].keys():
@@ -39,14 +38,3 @@ class Config:
                 init[i] = clazz.self_create(init[i])
 
         return unittype(*init) if len(init) else unittype()
-
-    @staticmethod
-    def params_as_list():
-        frame = inspect.currentframe().f_back
-        args, varargs, _, values = inspect.getargvalues(frame)
-        args.remove("self")
-        listina = [values[i] for i in args]
-        if varargs is not None:
-            listina += [value for value in values[varargs]]
-
-        return listina
