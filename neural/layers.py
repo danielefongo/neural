@@ -26,7 +26,7 @@ class Layer(Wrapper):
                  biases_initializer: Initializer = Zeros()):
         self.weighted_sum = WeightedSum(size, weights_initializer, biases_initializer)(InputPlaceholder())
         activation = activation(self.weighted_sum)
-        super().__init__(activation, [size])
+        super().__init__(activation, size, activation, weights_initializer, biases_initializer)
 
 
 class SimpleRNN(Recurrent):

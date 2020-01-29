@@ -18,8 +18,7 @@ class Unit(Config):
         self.output = []
         self.gradient = None
         self.plain = []
-        self.init = init
-        super().__init__(init)
+        super().__init__(*init)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -57,15 +56,15 @@ class Unit(Config):
     def create(configs):
         hash = {}
         for conf in configs:
-            unittype = locate(conf["clazz"])
-            hashino = conf["hash"]
+            unittype: Config = locate(conf["clazz"])
             input_units = [hash[id] for id in conf["input_units"]]
-            init = conf["init"]
+            hashino = conf["hash"]
             if hashino not in hash.keys():
-                new_unit = unittype(*init) if len(init) else unittype()
+                unit_1 = unittype.self_create(conf)
                 if len(input_units):
-                    new_unit(*input_units)
-                hash[hashino] = new_unit
+                    unit_1(*input_units)
+
+                hash[hashino] = unit_1
 
         return hash[hashino]
 

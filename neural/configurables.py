@@ -1,8 +1,9 @@
 import re
+from pydoc import locate
 
 
 class Config:
-    def __init__(self, init: list):
+    def __init__(self, *init):
         self.init = init
 
     def self_structure(self):
@@ -12,9 +13,14 @@ class Config:
             init=[a.self_structure() if isinstance(a, Config) else a for a in self.init],
         )
 
+    @staticmethod
+    def self_create(config):
+        unittype = locate(config["clazz"])
+        hashino = config["hash"]
+        init = config["init"]
+        for i in range(len(init)):
+            if isinstance(init[i], dict) and "clazz" in init[i].keys():
+                clazz = locate(init[i]["clazz"])
+                init[i] = clazz.self_create(init[i])
 
-class UnderConfig(Config):
-    def self_structure(self):
-        a = super().self_structure()
-        a["d"] = 3
-        return a
+        return unittype(*init) if len(init) else unittype()

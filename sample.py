@@ -2,11 +2,12 @@ import json
 
 import numpy as np
 
-from neural.initializers import Ones, Normal
+from neural.configurables import Config
+from neural.initializers import Ones, Normal, Zeros
 from neural.layers import WeightedSum
 from neural.optimizers import Adam
 # Load RANDOM data
-from neural.units import InputPlaceholder
+from neural.units import InputPlaceholder, Unit, MatMul
 
 
 def obtain_placeholders(unit):
@@ -24,9 +25,6 @@ batch_size = 8
 learning_rate = 0.001
 optimizer = Adam(learning_rate)
 
-matmul = WeightedSum(1, Ones(), Normal())(InputPlaceholder()(X))
-a = json.dumps(matmul.structure())
-print(a)
 # print(matmul.evaluate())
 # y = matmul.structure()
 #
@@ -36,6 +34,19 @@ print(a)
 # print(new_matmul.structure())
 # print(new_matmul.evaluate())
 
-# a = Config([1])
-# b = Config([2, a])
-# print(b.self_structure())
+a = InputPlaceholder()
+b = WeightedSum(1, Ones(), Zeros())(a)
+
+d = Unit.create(b.structure())
+
+#print(b.self_structure())
+print(b.structure())
+print(d.structure())
+placeholder_b = obtain_placeholders(b)[0]
+placeholder_d = obtain_placeholders(d)[0]
+placeholder_b(X)
+placeholder_d(X)
+print(b.evaluate())
+print(d.evaluate())
+#print(d.self_structure())
+#print(Unit.create(b.structure()))
