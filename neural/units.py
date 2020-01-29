@@ -1,4 +1,6 @@
 import copy
+import re
+from pydoc import locate
 from typing import List
 
 import numpy as np
@@ -8,13 +10,14 @@ from neural.ops import multiply, add, dot, sum_to_shape, merge, unmerge, stack, 
 
 
 class Unit:
-    def __init__(self):
+    def __init__(self, init: list = []):
         self.input_units = []
         self.output_units = []
         self.inputs = []
         self.output = []
         self.gradient = None
         self.plain = []
+        self.init = init
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -39,6 +42,30 @@ class Unit:
         for element in copy.copy(self.input_units):
             element.output_units.remove(self)
             self.input_units.remove(element)
+
+    def structure(self):
+        return [{
+            "unit": re.search('\'(.*)\'', str(unit.__class__)).group(1),
+            "hash": hash(unit),
+            "input_units": [hash(a) for a in unit.input_units if isinstance(a, Unit)],
+            "init": unit.init,
+        } for unit in self.plain_graph()]
+
+    @staticmethod
+    def create(configs):
+        hash = {}
+        for conf in configs:
+            unittype = locate(conf["unit"])
+            hashino = conf["hash"]
+            input_units = [hash[id] for id in conf["input_units"]]
+            init = conf["init"]
+            if hashino not in hash.keys():
+                new_unit = unittype(*init) if len(init) else unittype()
+                if len(input_units):
+                    new_unit(*input_units)
+                hash[hashino] = new_unit
+
+        return hash[hashino]
 
     def evaluate(self):
         [node._forward() for node in self.plain]
@@ -262,14 +289,14 @@ class Flatten(Unit):
 
 
 class Wrapper(Unit):
-    def __init__(self, unit):
+    def __init__(self, unit, init):
         self.fake_output: Unit = Unit()
         self.fake_inputs = self.obtain_placeholders(unit)
 
         self.unit: Unit = unit
         self.fake_output(self.unit)
 
-        super().__init__()
+        super().__init__(init)
 
     def obtain_placeholders(self, unit):
         candidates = []
@@ -277,6 +304,9 @@ class Wrapper(Unit):
             if candidate not in candidates and isinstance(candidate, InputPlaceholder):
                 candidates.append(candidate)
         return candidates
+
+    def internalities(self):
+        return self.unit.structure()
 
     def compute(self, *args: np.ndarray):
         for index in range(len(self.fake_inputs)):

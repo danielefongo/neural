@@ -13,7 +13,7 @@ class WeightedSum(Wrapper):
 
         matmul = MatMul()(InputPlaceholder(), self.weights)
         weighted_sum = Add()(matmul, self.biases)
-        super().__init__(weighted_sum)
+        super().__init__(weighted_sum, [size, weight_initializer, bias_initializer])
 
     def compute(self, args: np.ndarray):
         if self.weights.is_empty():
@@ -21,13 +21,12 @@ class WeightedSum(Wrapper):
             self.biases.set((1, self.size))
         return super().compute(args)
 
-
 class Layer(Wrapper):
     def __init__(self, size: int, activation: Activation = Linear(), weights_initializer: Initializer = Normal(),
                  biases_initializer: Initializer = Zeros()):
-        weighted_sum = WeightedSum(size, weights_initializer, biases_initializer)(InputPlaceholder())
-        activation = activation(weighted_sum)
-        super().__init__(activation)
+        self.weighted_sum = WeightedSum(size, weights_initializer, biases_initializer)(InputPlaceholder())
+        activation = activation(self.weighted_sum)
+        super().__init__(activation, [size])
 
 
 class SimpleRNN(Recurrent):
