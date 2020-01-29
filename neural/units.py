@@ -5,11 +5,12 @@ from typing import List
 
 import numpy as np
 
+from neural.configurables import Config
 from neural.ops import multiply, add, dot, sum_to_shape, merge, unmerge, stack, unstack, take, replace, reshape, zeros, \
     empty
 
 
-class Unit:
+class Unit(Config):
     def __init__(self, init: list = []):
         self.input_units = []
         self.output_units = []
@@ -18,6 +19,7 @@ class Unit:
         self.gradient = None
         self.plain = []
         self.init = init
+        super().__init__(init)
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -43,19 +45,19 @@ class Unit:
             element.output_units.remove(self)
             self.input_units.remove(element)
 
+    def self_structure(self):
+        a = super().self_structure()
+        a["input_units"] = [hash(a) for a in self.input_units if isinstance(a, Unit)]
+        return a
+
     def structure(self):
-        return [{
-            "unit": re.search('\'(.*)\'', str(unit.__class__)).group(1),
-            "hash": hash(unit),
-            "input_units": [hash(a) for a in unit.input_units if isinstance(a, Unit)],
-            "init": unit.init,
-        } for unit in self.plain_graph()]
+        return [unit.self_structure() for unit in self.plain_graph()]
 
     @staticmethod
     def create(configs):
         hash = {}
         for conf in configs:
-            unittype = locate(conf["unit"])
+            unittype = locate(conf["clazz"])
             hashino = conf["hash"]
             input_units = [hash[id] for id in conf["input_units"]]
             init = conf["init"]
