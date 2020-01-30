@@ -3,11 +3,12 @@ from typing import List
 
 import numpy as np
 
+from neural.exportable import Exportable
 from neural.ops import multiply, add, dot, sum_to_shape, merge, unmerge, stack, unstack, take, replace, reshape, zeros, \
     empty
 
 
-class Unit:
+class Unit(Exportable):
     def __init__(self):
         self.input_units = []
         self.output_units = []
@@ -15,6 +16,7 @@ class Unit:
         self.output = []
         self.gradient = None
         self.plain = []
+        super().__init__()
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -39,6 +41,29 @@ class Unit:
         for element in copy.copy(self.input_units):
             element.output_units.remove(self)
             self.input_units.remove(element)
+
+    def self_structure(self):
+        a = super().self_structure()
+        a["input_units"] = [hash(a) for a in self.input_units if isinstance(a, Unit)]
+        return a
+
+    def structure(self):
+        return [unit.self_structure() for unit in self.plain_graph()]
+
+    @staticmethod
+    def create(configs):
+        created_units = {}
+        for conf in configs:
+            input_units = [created_units[id] for id in conf["input_units"]]
+            actual_unit_hash = conf["hash"]
+            if actual_unit_hash not in created_units.keys():
+                new_unit = Unit.self_create(conf)
+                if len(input_units):
+                    new_unit(*input_units)
+
+                created_units[actual_unit_hash] = new_unit
+
+        return created_units[actual_unit_hash]
 
     def evaluate(self):
         [node._forward() for node in self.plain]
@@ -149,6 +174,9 @@ class Weight(Unit):
 
     def apply(self, gradient: np.ndarray, optimizer):
         self.weights.value -= optimizer.on(self, gradient)
+
+    def __deepcopy__(self, memo):
+        return self
 
 
 class Add(Unit):
