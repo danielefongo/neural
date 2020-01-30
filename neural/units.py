@@ -3,11 +3,12 @@ from typing import List
 
 import numpy as np
 
+from neural.exportable import Exportable
 from neural.ops import multiply, add, dot, sum_to_shape, merge, unmerge, stack, unstack, take, replace, reshape, zeros, \
     empty
 
 
-class Unit:
+class Unit(Exportable):
     def __init__(self):
         self.input_units = []
         self.output_units = []
@@ -15,6 +16,7 @@ class Unit:
         self.output = []
         self.gradient = None
         self.plain = []
+        super().__init__()
 
     def __deepcopy__(self, memo):
         cls = self.__class__
@@ -62,6 +64,29 @@ class Unit:
 
         recurse(self)
         return node_list
+
+    def export_graph(self):
+        exports = []
+        for unit in self.plain_graph():
+            unit_export = unit.export()
+            unit_export["input_units"] = [hash(input_unit) for input_unit in unit.input_units]
+            exports.append(unit_export)
+        return exports
+
+    @staticmethod
+    def generate_graph(configs):
+        created_units = {}
+        for config in configs:
+            input_units = [created_units[id] for id in config["input_units"]]
+            actual_unit_hash = config["hash"]
+            if actual_unit_hash not in created_units.keys():
+                new_unit = Unit.use(config)
+                if len(input_units):
+                    new_unit(*input_units)
+
+                created_units[actual_unit_hash] = new_unit
+
+        return list(created_units.values())
 
     def _forward(self):
         self.inputs = [input_node.output for input_node in self.input_units]

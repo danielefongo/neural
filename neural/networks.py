@@ -1,13 +1,14 @@
 import numpy as np
 
 from neural.arrays import shuffle_arrays, to_batches
-from neural.units import Placeholder
 from neural.losses import Loss
 from neural.optimizers import Optimizer
+from neural.units import Placeholder, Unit
 
 
 class Network:
     def __init__(self):
+        super().__init__()
         self.x = Placeholder()
         self.y = Placeholder()
         self.unit = self.x
@@ -48,3 +49,11 @@ class Network:
         self.x(x)
 
         return self.y.evaluate()
+
+    def export(self):
+        return self.unit.export_graph()
+
+    def use(self, configs):
+        units = Unit.generate_graph(configs)
+        self.x = units[0]
+        self.unit = units[-1]
