@@ -48,7 +48,7 @@ class Network:
     def evaluate(self, x):
         self.x(x)
 
-        return self.y.evaluate()
+        return self.unit.evaluate()
 
     def export(self):
         return self.unit.export_graph()

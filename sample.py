@@ -31,5 +31,5 @@ new_network = Network()
 new_network.use(config)
 
 new_network.train(X, Y, batch_size, epochs, CrossEntropy(), optimizer, shuffle=False)
-print(new_network.unit.evaluate()[:3])
-print(new_network.y.evaluate()[:3])
+print(new_network.evaluate(X)[:3])
+print(Y[:3])
