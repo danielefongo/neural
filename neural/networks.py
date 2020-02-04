@@ -5,14 +5,14 @@ import numpy as np
 from neural.arrays import shuffle_arrays, to_batches
 from neural.losses import Loss
 from neural.optimizers import Optimizer
-from neural.units import Placeholder, Unit, Variable, Graph
+from neural.units import Placeholder, Variable, Graph, Input
 
 
 class Network:
     def __init__(self):
         super().__init__()
-        self.x = Placeholder()
-        self.y = Placeholder()
+        self.x = Input()
+        self.y = Input()
         self.unit = self.x
 
     def add(self, unit):

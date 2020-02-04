@@ -77,13 +77,20 @@ class Unit(Exportable):
 class Graph:
     def __init__(self, unit):
         self.unit = unit
+        self.inputs = self.find(Input)
 
-    def evaluate(self):
+    def evaluate(self, *args):
+        for index in range(len(args)):
+            self.inputs[index](args[index])
+
         [node._forward() for node in self.plain()]
         return self.unit.output
 
     def error(self, optimizer):
         [node._backward(optimizer) for node in self.plain()[::-1]]
+
+        gradients = [unit.gradient for unit in self.inputs]
+        return gradients if len(gradients) > 1 else gradients[0]
 
     def plain(self):
         node_list: List[Unit] = []
@@ -311,28 +318,18 @@ class Flatten(Unit):
 
 class Wrapper(Unit):
     def __init__(self, unit):
-        self.fake_output: Unit = Unit()
         self.inner_graph = Graph(unit)
-        self.fake_inputs = self.inner_graph.find(Input)
-
-        self.unit: Unit = unit
-        self.fake_output(self.unit)
+        self.fake_output: Unit = Unit()(unit)
 
         super().__init__()
 
     def compute(self, *args: np.ndarray):
-        for index in range(len(self.fake_inputs)):
-            self.fake_inputs[index](args[index])
-
-        return self.inner_graph.evaluate()
+        return self.inner_graph.evaluate(*args)
 
     def apply(self, gradient: np.ndarray, optimizer):
         self.fake_output.gradient = gradient
 
-        self.inner_graph.error(optimizer)
-
-        gradients = [unit.gradient for unit in self.fake_inputs]
-        return gradients if len(gradients) > 1 else gradients[0]
+        return self.inner_graph.error(optimizer)
 
     def vars(self):
         return self.inner_graph.all_vars()
