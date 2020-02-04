@@ -64,29 +64,6 @@ class Unit(Exportable):
         recurse(self)
         return node_list
 
-    def export_graph(self):
-        exports = []
-        for unit in self.plain_graph():
-            unit_export = unit.export()
-            unit_export["input_units"] = [hash(input_unit) for input_unit in unit.input_units]
-            exports.append(unit_export)
-        return exports
-
-    @staticmethod
-    def generate_graph(configs):
-        created_units = {}
-        for config in configs:
-            input_units = [created_units[id] for id in config["input_units"]]
-            actual_unit_hash = config["hash"]
-            if actual_unit_hash not in created_units.keys():
-                new_unit = Unit.use(config)
-                if len(input_units):
-                    new_unit(*input_units)
-
-                created_units[actual_unit_hash] = new_unit
-
-        return list(created_units.values())
-
     def _forward(self):
         self.inputs = [input_node.output for input_node in self.input_units]
         self.output = self.compute(*self.inputs)
@@ -127,6 +104,29 @@ class Graph:
 
     def error(self, optimizer):
         [node._backward(optimizer) for node in self.unit.plain_graph()[::-1]]
+
+    def export(self):
+        exports = []
+        for unit in self.unit.plain_graph():
+            unit_export = unit.export()
+            unit_export["input_units"] = [hash(input_unit) for input_unit in unit.input_units]
+            exports.append(unit_export)
+        return exports
+
+    @staticmethod
+    def use(configs):
+        created_units = {}
+        for config in configs:
+            input_units = [created_units[id] for id in config["input_units"]]
+            actual_unit_hash = config["hash"]
+            if actual_unit_hash not in created_units.keys():
+                new_unit = Unit.use(config)
+                if len(input_units):
+                    new_unit(*input_units)
+
+                created_units[actual_unit_hash] = new_unit
+
+        return list(created_units.values())
 
 
 class Variable:
