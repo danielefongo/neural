@@ -5,7 +5,7 @@ import numpy as np
 from neural.arrays import shuffle_arrays, to_batches
 from neural.losses import Loss
 from neural.optimizers import Optimizer
-from neural.units import Placeholder, Unit, Variable
+from neural.units import Placeholder, Unit, Variable, Graph
 
 
 class Network:
@@ -20,7 +20,7 @@ class Network:
 
     def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss,
               optimizer: Optimizer, shuffle=True):
-        loss = loss_function(self.unit, self.y)
+        loss = Graph(loss_function(self.unit, self.y))
 
         for epoch in range(1, epochs + 1):
             optimizer.set_epoch(epoch)
@@ -51,7 +51,7 @@ class Network:
     def evaluate(self, x):
         self.x(x)
 
-        return self.unit.evaluate()
+        return Graph(self.unit).evaluate()
 
     def export(self):
         return self.unit.export_graph(), self.unit.plain_vars()

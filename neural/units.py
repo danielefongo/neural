@@ -42,13 +42,6 @@ class Unit(Exportable):
             element.output_units.remove(self)
             self.input_units.remove(element)
 
-    def evaluate(self):
-        [node._forward() for node in self.plain]
-        return self.output
-
-    def error(self, optimizer):
-        [node._backward(optimizer) for node in self.plain[::-1]]
-
     def copy(self):
         return copy.deepcopy(self)
 
@@ -122,6 +115,18 @@ class Unit(Exportable):
 
     def vars(self):
         return []
+
+
+class Graph:
+    def __init__(self, unit):
+        self.unit = unit
+
+    def evaluate(self):
+        [node._forward() for node in self.unit.plain_graph()]
+        return self.unit.output
+
+    def error(self, optimizer):
+        [node._backward(optimizer) for node in self.unit.plain_graph()[::-1]]
 
 
 class Variable:
@@ -302,6 +307,7 @@ class Wrapper(Unit):
     def __init__(self, unit):
         self.fake_output: Unit = Unit()
         self.fake_inputs = self.obtain_placeholders(unit)
+        self.inner_graph = Graph(unit)
 
         self.unit: Unit = unit
         self.fake_output(self.unit)
@@ -319,12 +325,12 @@ class Wrapper(Unit):
         for index in range(len(self.fake_inputs)):
             self.fake_inputs[index](args[index])
 
-        return self.unit.evaluate()
+        return self.inner_graph.evaluate()
 
     def apply(self, gradient: np.ndarray, optimizer):
         self.fake_output.gradient = gradient
 
-        self.unit.error(optimizer)
+        self.inner_graph.error(optimizer)
 
         gradients = [unit.gradient for unit in self.fake_inputs]
         return gradients if len(gradients) > 1 else gradients[0]
