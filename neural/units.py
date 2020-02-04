@@ -52,6 +52,12 @@ class Unit(Exportable):
     def copy(self):
         return copy.deepcopy(self)
 
+    def plain_vars(self):
+        all_vars = []
+        for unit in self.plain:
+            all_vars.extend(unit.vars())
+        return all_vars
+
     def plain_graph(self):
         node_list: List[Unit] = []
 
@@ -114,6 +120,9 @@ class Unit(Exportable):
     def apply(self, gradient: np.ndarray, optimizer):
         raise NotImplementedError()
 
+    def vars(self):
+        return []
+
 
 class Variable:
     def __init__(self, value=None):
@@ -174,6 +183,9 @@ class Weight(Unit):
 
     def apply(self, gradient: np.ndarray, optimizer):
         self.weights.value -= optimizer.on(self, gradient)
+
+    def vars(self):
+        return [self.weights]
 
 
 class Add(Unit):
@@ -317,6 +329,9 @@ class Wrapper(Unit):
         gradients = [unit.gradient for unit in self.fake_inputs]
         return gradients if len(gradients) > 1 else gradients[0]
 
+    def vars(self):
+        return self.unit.plain_vars()
+
 
 class Recurrent(Wrapper):
     def __init__(self, unit, size, timeseries_length, return_sequences=False):
@@ -348,3 +363,6 @@ class Recurrent(Wrapper):
             units.append(recurrent_unit)
 
         return units
+
+    def vars(self):
+        return self.units[0].plain_vars()

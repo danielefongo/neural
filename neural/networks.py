@@ -1,9 +1,11 @@
+from typing import List
+
 import numpy as np
 
 from neural.arrays import shuffle_arrays, to_batches
 from neural.losses import Loss
 from neural.optimizers import Optimizer
-from neural.units import Placeholder, Unit
+from neural.units import Placeholder, Unit, Variable
 
 
 class Network:
@@ -16,10 +18,11 @@ class Network:
     def add(self, unit):
         self.unit = unit(self.unit)
 
-    def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss, optimizer: Optimizer, shuffle=True):
+    def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss,
+              optimizer: Optimizer, shuffle=True):
         loss = loss_function(self.unit, self.y)
 
-        for epoch in range(1, epochs+1):
+        for epoch in range(1, epochs + 1):
             optimizer.set_epoch(epoch)
 
             if shuffle:
@@ -51,9 +54,13 @@ class Network:
         return self.unit.evaluate()
 
     def export(self):
-        return self.unit.export_graph()
+        return self.unit.export_graph(), self.unit.plain_vars()
 
-    def use(self, configs):
+    def use(self, configs, variables: List[Variable] = []):
         units = Unit.generate_graph(configs)
         self.x = units[0]
         self.unit = units[-1]
+        if not len(variables):
+            return
+        for new_variable, old_variable in zip(self.unit.plain_vars(), variables):
+            new_variable.value = old_variable.value

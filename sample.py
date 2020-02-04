@@ -14,7 +14,7 @@ Y2 = X[:, 0] <= X[:, 1]
 Y = np.stack((Y1, Y2), 1) * 1.0
 
 # Train
-epochs = 20
+epochs = 5
 batch_size = 32
 learning_rate = 0.001
 optimizer = Adam(learning_rate)
@@ -25,10 +25,11 @@ output_features = Y.shape[-1]
 network = Network()
 network.add(Layer(100, Tanh()))
 network.add(Layer(Y.shape[-1], Softmax()))
-config = network.export()
+network.train(X, Y, batch_size, epochs, CrossEntropy(), optimizer, shuffle=False)
+config, variables = network.export()
 
 new_network = Network()
-new_network.use(config)
+new_network.use(config, variables)
 
 new_network.train(X, Y, batch_size, epochs, CrossEntropy(), optimizer, shuffle=False)
 print(new_network.evaluate(X)[:3])
