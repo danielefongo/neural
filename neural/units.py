@@ -170,7 +170,7 @@ class Placeholder(Unit):
         return self.real_data
 
 
-class InputPlaceholder(Placeholder):
+class Input(Placeholder):
     pass
 
 
@@ -313,7 +313,7 @@ class Wrapper(Unit):
     def __init__(self, unit):
         self.fake_output: Unit = Unit()
         self.inner_graph = Graph(unit)
-        self.fake_inputs = self.inner_graph.find(InputPlaceholder)
+        self.fake_inputs = self.inner_graph.find(Input)
 
         self.unit: Unit = unit
         self.fake_output(self.unit)
@@ -360,7 +360,7 @@ class Recurrent(Wrapper):
         return super().compute(args)
 
     def _unroll(self, unit, timeseries_length):
-        timeframed_input = InputPlaceholder()
+        timeframed_input = Input()
         recurrent_unit = Wrapper(unit.copy())(self.zero, Take(0)(timeframed_input))
 
         units = [recurrent_unit]
