@@ -34,7 +34,6 @@ class Unit(Exportable):
             if isinstance(element, Unit):
                 element.output_units.append(self)
 
-        self.plain = self.plain_graph()
         return self
 
     def _remove_all_inputs(self):
@@ -44,25 +43,6 @@ class Unit(Exportable):
 
     def copy(self):
         return copy.deepcopy(self)
-
-    def plain_vars(self):
-        all_vars = []
-        for unit in self.plain:
-            all_vars.extend(unit.vars())
-        return all_vars
-
-    def plain_graph(self):
-        node_list: List[Unit] = []
-
-        def recurse(node):
-            if isinstance(node, Unit):
-                for input_node in node.input_units:
-                    recurse(input_node)
-            if node not in node_list:
-                node_list.append(node)
-
-        recurse(self)
-        return node_list
 
     def _forward(self):
         self.inputs = [input_node.output for input_node in self.input_units]
@@ -99,15 +79,34 @@ class Graph:
         self.unit = unit
 
     def evaluate(self):
-        [node._forward() for node in self.unit.plain_graph()]
+        [node._forward() for node in self.plain()]
         return self.unit.output
 
     def error(self, optimizer):
-        [node._backward(optimizer) for node in self.unit.plain_graph()[::-1]]
+        [node._backward(optimizer) for node in self.plain()[::-1]]
+
+    def plain(self):
+        node_list: List[Unit] = []
+
+        def recurse(node):
+            if isinstance(node, Unit):
+                for input_node in node.input_units:
+                    recurse(input_node)
+            if node not in node_list:
+                node_list.append(node)
+
+        recurse(self.unit)
+        return node_list
+
+    def all_vars(self):
+        all_vars = []
+        for unit in self.plain():
+            all_vars.extend(unit.vars())
+        return all_vars
 
     def export(self):
         exports = []
-        for unit in self.unit.plain_graph():
+        for unit in self.plain():
             unit_export = unit.export()
             unit_export["input_units"] = [hash(input_unit) for input_unit in unit.input_units]
             exports.append(unit_export)
@@ -130,7 +129,7 @@ class Graph:
 
     def find(self, unitType):
         candidates = []
-        for candidate in self.unit.plain_graph():
+        for candidate in self.plain():
             if candidate not in candidates and isinstance(candidate, unitType):
                 candidates.append(candidate)
         return candidates
@@ -336,7 +335,7 @@ class Wrapper(Unit):
         return gradients if len(gradients) > 1 else gradients[0]
 
     def vars(self):
-        return self.unit.plain_vars()
+        return self.inner_graph.all_vars()
 
 
 class Recurrent(Wrapper):
@@ -345,6 +344,7 @@ class Recurrent(Wrapper):
         self.timeseries_length = timeseries_length
         self.return_sequences = return_sequences
         self.zero = Placeholder()
+        self.single_unit_graph = Graph(unit)
 
         self.units = self._unroll(unit, self.timeseries_length)
 
@@ -371,4 +371,4 @@ class Recurrent(Wrapper):
         return units
 
     def vars(self):
-        return self.units[0].plain_vars()
+        return self.single_unit_graph.all_vars()

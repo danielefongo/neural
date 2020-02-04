@@ -54,13 +54,15 @@ class Network:
         return Graph(self.unit).evaluate()
 
     def export(self):
-        return Graph(self.unit).export(), self.unit.plain_vars()
+        graph = Graph(self.unit)
+        return graph.export(), graph.all_vars()
 
     def use(self, configs, variables: List[Variable] = []):
         units = Graph.use(configs)
         self.x = units[0]
         self.unit = units[-1]
+        graph = Graph(self.unit)
         if not len(variables):
             return
-        for new_variable, old_variable in zip(self.unit.plain_vars(), variables):
+        for new_variable, old_variable in zip(graph.all_vars(), variables):
             new_variable.value = old_variable.value
