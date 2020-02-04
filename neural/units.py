@@ -128,6 +128,13 @@ class Graph:
 
         return list(created_units.values())
 
+    def find(self, unitType):
+        candidates = []
+        for candidate in self.unit.plain_graph():
+            if candidate not in candidates and isinstance(candidate, unitType):
+                candidates.append(candidate)
+        return candidates
+
 
 class Variable:
     def __init__(self, value=None):
@@ -306,20 +313,13 @@ class Flatten(Unit):
 class Wrapper(Unit):
     def __init__(self, unit):
         self.fake_output: Unit = Unit()
-        self.fake_inputs = self.obtain_placeholders(unit)
         self.inner_graph = Graph(unit)
+        self.fake_inputs = self.inner_graph.find(InputPlaceholder)
 
         self.unit: Unit = unit
         self.fake_output(self.unit)
 
         super().__init__()
-
-    def obtain_placeholders(self, unit):
-        candidates = []
-        for candidate in unit.plain_graph():
-            if candidate not in candidates and isinstance(candidate, InputPlaceholder):
-                candidates.append(candidate)
-        return candidates
 
     def compute(self, *args: np.ndarray):
         for index in range(len(self.fake_inputs)):
