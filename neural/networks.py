@@ -5,22 +5,23 @@ import numpy as np
 from neural.arrays import shuffle_arrays, to_batches
 from neural.losses import Loss
 from neural.optimizers import Optimizer
-from neural.units import Placeholder, Variable, Graph, Input
+from neural.units import Variable, Graph, Input, Unit
 
 
 class Network:
-    def __init__(self):
-        super().__init__()
-        self.x = Input()
+    def __init__(self, graph: Graph = None):
+        if graph is None:
+            graph = Graph(Input())
+        self.graph = graph
         self.y = Input()
-        self.unit = self.x
 
     def add(self, unit):
-        self.unit = unit(self.unit)
+        unit = unit(self.graph.unit)
+        self.graph = Graph(unit)
 
     def train(self, x: np.ndarray, y: np.ndarray, batch_size: int, epochs: int, loss_function: Loss,
               optimizer: Optimizer, shuffle=True):
-        loss = Graph(loss_function(self.unit, self.y))
+        loss = Graph(loss_function(self.graph.unit, self.y))
 
         for epoch in range(1, epochs + 1):
             optimizer.set_epoch(epoch)
@@ -39,30 +40,25 @@ class Network:
         batches_number = batched_x.shape[0]
 
         for batch in range(batches_number):
-            self.x(batched_x[batch])
-            self.y(batched_y[batch])
-
-            loss_mean += loss.evaluate()
+            loss_mean += loss.evaluate(batched_x[batch], batched_y[batch])
 
             loss.error(optimizer)
 
         return loss_mean / batches_number
 
     def evaluate(self, x):
-        self.x(x)
-
-        return Graph(self.unit).evaluate()
+        return self.graph.evaluate(x)
 
     def export(self):
-        graph = Graph(self.unit)
-        return graph.export(), graph.all_vars()
+        return self.graph.export(), self.graph.all_vars()
 
-    def use(self, configs, variables: List[Variable] = []):
-        units = Graph.use(configs)
-        self.x = units[0]
-        self.unit = units[-1]
-        graph = Graph(self.unit)
+    @staticmethod
+    def use(configs, variables: List[Variable] = []):
+        graph = Graph.use(configs)
+
         if not len(variables):
             return
         for new_variable, old_variable in zip(graph.all_vars(), variables):
             new_variable.value = old_variable.value
+
+        return Network(graph)

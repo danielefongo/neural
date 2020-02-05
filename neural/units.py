@@ -132,7 +132,7 @@ class Graph:
 
                 created_units[actual_unit_hash] = new_unit
 
-        return list(created_units.values())
+        return Graph(created_units[actual_unit_hash])
 
     def find(self, unitType):
         candidates = []

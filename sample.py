@@ -27,8 +27,7 @@ network.train(X, Y, batch_size, epochs, CrossEntropy(), GradientDescent(learning
 
 config, variables = network.export()
 
-new_network = Network()
-new_network.use(config, variables)
+new_network = Network.use(config, variables)
 
 new_network.train(X, Y, batch_size, epochs, CrossEntropy(), GradientDescent(learning_rate), shuffle=False)
 print(new_network.evaluate(X)[:3])
