@@ -336,8 +336,9 @@ class Wrapper(Unit):
 
 
 class Recurrent(Wrapper):
-    def __init__(self, unit, size, timeseries_length, return_sequences=False):
+    def __init__(self, unit, size, timeseries_length, return_sequences=False, truncated_backprop_size=10):
         self.size = size
+        self.truncated_backprop_size = truncated_backprop_size
         self.timeseries_length = timeseries_length
         self.return_sequences = return_sequences
         self.zero = Placeholder()
@@ -355,6 +356,19 @@ class Recurrent(Wrapper):
     def compute(self, args: np.ndarray):
         self.zero(zeros((args.shape[0], self.size)))
         return super().compute(args)
+
+    def apply(self, gradient: np.ndarray, optimizer):
+        if len(self.units) < self.truncated_backprop_size:
+            return super().apply(gradient, optimizer)
+
+        truncated_unit_index = len(self.units) - self.truncated_backprop_size
+        truncated_unit_inputs = [unit for unit in self.units[truncated_unit_index].input_units]
+
+        self.units[truncated_unit_index]()
+        new_gradient = super().apply(gradient, optimizer)
+        self.units[truncated_unit_index](*truncated_unit_inputs)
+
+        return new_gradient
 
     def _unroll(self, unit, timeseries_length):
         timeframed_input = Input()

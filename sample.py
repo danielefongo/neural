@@ -7,7 +7,7 @@ from neural.networks import Network
 from neural.optimizers import GradientDescent
 
 # Load RANDOM data
-X = np.random.random_integers(1, 30, (3000, 2, 2))
+X = np.random.random_integers(1, 30, (100, 800, 2))
 Y1 = X[:, -1, 0] > X[:, -1, 1]
 Y2 = X[:, -1, 0] <= X[:, -1, 1]
 Y = np.stack((Y1, Y2), 1) * 1.0
@@ -15,13 +15,13 @@ Y = np.stack((Y1, Y2), 1) * 1.0
 # Train
 epochs = 5
 batch_size = 32
-learning_rate = 0.001
+learning_rate = 0.1
 
 input_features = X.shape[-1]
 output_features = Y.shape[-1]
 
 network = Network()
-network.add(SimpleRNN(100, 2, Tanh()))
+network.add(SimpleRNN(100, X.shape[1], Tanh()))
 network.add(Layer(Y.shape[-1], Softmax()))
 network.train(X, Y, batch_size, epochs, CrossEntropy(), GradientDescent(learning_rate), shuffle=False)
 
