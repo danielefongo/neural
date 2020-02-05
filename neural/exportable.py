@@ -5,12 +5,8 @@ from pydoc import locate
 
 class Exportable:
     def __init__(self):
-        frame = inspect.currentframe()
-        stack = inspect.getouterframes(frame)
-        for stackFrame in [frameInfo[0] for frameInfo in stack]:
-            if inspect.getframeinfo(stackFrame).function != "__init__":
-                break
-            frame = stackFrame
+        actual_frame = inspect.currentframe()
+        frame = self._last_frame_for_self_init(actual_frame)
 
         args, varargs, _, values = inspect.getargvalues(frame)
 
@@ -37,3 +33,9 @@ class Exportable:
                 init[i] = clazz.use(init[i])
 
         return exportableType(*init) if len(init) else exportableType()
+
+    def _last_frame_for_self_init(self, actual_frame):
+        stack = inspect.getouterframes(actual_frame)
+        frames = [frameInfo[0] for frameInfo in stack]
+        valid_frames = [frame for frame in frames if "self" in frame.f_locals.keys() and frame.f_locals["self"] == self]
+        return valid_frames[-1]
