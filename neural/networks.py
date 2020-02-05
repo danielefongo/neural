@@ -62,9 +62,8 @@ class Network:
     def use(configs, variables: List[Variable] = []):
         graph = Graph.use(configs)
 
-        if not len(variables):
-            return
-        for new_variable, old_variable in zip(graph.all_vars(), variables):
-            new_variable.value = old_variable.value
+        if len(variables):
+            for new_variable, old_variable in zip(graph.all_vars(), variables):
+                new_variable.value = old_variable.value
 
         return Network(graph)
