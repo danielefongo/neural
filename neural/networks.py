@@ -56,14 +56,10 @@ class Network:
         return self.graph.export()
 
     def export_variables(self):
-        return self.graph.all_vars()
+        return self.graph.get_vars()
 
     @staticmethod
-    def use(configs, variables: List[Variable] = []):
+    def use(configs, variables):
         graph = Graph.use(configs)
-
-        if len(variables):
-            for new_variable, old_variable in zip(graph.all_vars(), variables):
-                new_variable.value = old_variable.value
-
+        graph.set_vars(variables)
         return Network(graph)

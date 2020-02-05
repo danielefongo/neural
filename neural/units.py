@@ -105,11 +105,16 @@ class Graph:
         recurse(self.unit)
         return node_list
 
-    def all_vars(self):
+    def get_vars(self):
         all_vars = []
         for unit in self.plain():
             all_vars.extend(unit.vars())
         return all_vars
+
+    def set_vars(self, variables=[]):
+        if len(variables):
+            for new_variable, old_variable in zip(self.get_vars(), variables):
+                new_variable.value = old_variable.value
 
     def export(self):
         exports = []
@@ -332,7 +337,7 @@ class Wrapper(Unit):
         return self.inner_graph.error(optimizer)
 
     def vars(self):
-        return self.inner_graph.all_vars()
+        return self.inner_graph.get_vars()
 
 
 class Recurrent(Wrapper):
@@ -382,4 +387,4 @@ class Recurrent(Wrapper):
         return units
 
     def vars(self):
-        return self.single_unit_graph.all_vars()
+        return self.single_unit_graph.get_vars()
