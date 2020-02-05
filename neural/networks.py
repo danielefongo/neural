@@ -5,7 +5,7 @@ import numpy as np
 from neural.arrays import shuffle_arrays, to_batches
 from neural.losses import Loss
 from neural.optimizers import Optimizer
-from neural.units import Variable, Graph, Input, Unit
+from neural.units import Variable, Graph, Input
 
 
 class Network:
@@ -49,8 +49,14 @@ class Network:
     def evaluate(self, x):
         return self.graph.evaluate(x)
 
-    def export(self):
-        return self.graph.export(), self.graph.all_vars()
+    def export_all(self):
+        return self.export_configuration(), self.export_variables()
+
+    def export_configuration(self):
+        return self.graph.export()
+
+    def export_variables(self):
+        return self.graph.all_vars()
 
     @staticmethod
     def use(configs, variables: List[Variable] = []):

@@ -25,7 +25,7 @@ network.add(SimpleRNN(100, 2, Tanh()))
 network.add(Layer(Y.shape[-1], Softmax()))
 network.train(X, Y, batch_size, epochs, CrossEntropy(), GradientDescent(learning_rate), shuffle=False)
 
-config, variables = network.export()
+config, variables = network.export_all()
 
 new_network = Network.use(config, variables)
 
