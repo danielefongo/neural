@@ -2,7 +2,7 @@ from typing import List
 
 import numpy as np
 
-from neural.arrays import shuffle_arrays, to_batches
+from neural.ops import shuffle_arrays, to_batches
 from neural.losses import Loss
 from neural.optimizers import Optimizer
 from neural.units import Variable, Graph, Input
